@@ -1,29 +1,46 @@
 
+import numpy as np
 from mydata import dataset1, dataset2
+from network import generate_nodes, plot_network, connect_agents
 from train import Agent
-from utils import LOG
+from utils import LOG, set_seeds
 
 
-def network_setup(opts):
+def agents_setup(opts, dataset_fun: callable):
     # Get global dataset and agent-specific biases
-    if opts.dataset == "dataset1":
-        dataset, bias = dataset1(opts.seed, opts.n_agents)
-    elif opts.dataset == "dataset2":
-        dataset, bias = dataset2(opts.seed, opts.n_agents)
-    else:
-        raise ValueError(f"Unknown dataset {opts.dataset}")
+    agent_splits = dataset_fun(opts.seed, opts.n_samples, opts.n_agents)
     # Agents
     agents = []
     for i in range(opts.n_agents):
-        # specific data for each agent
-        bias_i = bias[i]  # scalar
+        # get agent-specific dataset
+        agent_data = agent_splits[i]
         # create agent object
-        agent_i = Agent(i, dataset, bias_i)
+        agent_i = Agent(i, agent_data["global_features"],
+                        agent_data["local_features"], agent_data["targets"])
         agents.append(agent_i)
+
+    return agents
 
 
 def main(opts):
-    return None
+    set_seeds(opts.seed)
+    # 1) Generate data
+    if opts.dataset == "dataset1":
+        dataset_fun = dataset1
+    elif opts.dataset == "dataset2":
+        dataset_fun = dataset2
+    else:
+        raise ValueError(f"Unknown dataset {opts.dataset}")
+    # 2) Init agents and create network
+    agents = agents_setup(opts, dataset_fun)
+    dist_mat, coords = generate_nodes(opts.seed, opts.n_agents)
+    connect_agents(opts.dist_thresh, dist_mat, agents)
+    plot_network(coords, agents, opts.experiment_name)
+    # 3) Compute (train) local solution for each agent
+    for agent in agents:
+        agent.train()  # solve local least-squares
+    pass
+    # 4) Consensus algorithm
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 """Design the multi-agent system"""
 
+import os
 from types import SimpleNamespace
 import numpy as np
 import numpy.linalg as la
@@ -21,9 +22,10 @@ def distance_matrix(coords) -> np.ndarray:
     return dist_mat
 
 
-def generate_network(seed, n_agents, l=5):
+def generate_nodes(seed, n_agents, l=5):
     set_seeds(seed)
     # random coordinates
+    # TODO: without replacement and minimum distance between nodes
     x_coords = np.random.uniform(-l//2, l//2, n_agents)
     y_coords = np.random.uniform(-l//2, l//2, n_agents)
     # coords matrix
@@ -36,8 +38,8 @@ def generate_network(seed, n_agents, l=5):
 
 def connect_agents(thresh, dist_mat, agents):
     """
-    Check distance then add connection
-    One must ensure that the graph is connected
+    Check distance then add connection using update_neighbor method
+    One must ensure that the graph is connected before
     """
     for i, agent in enumerate(agents):
         dist = dist_mat[i]
@@ -83,7 +85,7 @@ def metropolis_consensus(adjacency, agents) -> np.ndarray:
     return metropolis_mat
 
 
-def plot_network(coords, agents):
+def plot_network(coords, agents, fname="network.pdf"):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     # plot agent nodes
@@ -102,12 +104,15 @@ def plot_network(coords, agents):
     ax.set_aspect('equal', adjustable='box')
     ax.set_xticklabels([])
     ax.set_yticklabels([])
-    plt.savefig("./plots/network.pdf")
+    # save network plot
+    output_dir = os.path.join("plots", fname)
+    os.makedirs("plots", exist_ok=True)
+    plt.savefig(output_dir)
 
 
 def main(opts):
     # generate nodes
-    dist_mat, coords = generate_network(opts.seed, opts.n_agents)
+    dist_mat, coords = generate_nodes(opts.seed, opts.n_agents)
     # create agents
     agents = [Agent(i) for i in range(opts.n_agents)]
     # connect agents that are near
