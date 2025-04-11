@@ -4,12 +4,13 @@ import os
 from types import SimpleNamespace
 import numpy as np
 import numpy.linalg as la
+from typing import List
 
 from train import Agent
 from utils import set_seeds
 
 
-def distance_matrix(coords) -> np.ndarray:
+def distance_matrix(coords: np.ndarray) -> np.ndarray:
     n_agents = coords.shape[0]
     dist_mat = np.zeros((n_agents, n_agents))
     for i in range(n_agents):
@@ -23,59 +24,60 @@ def distance_matrix(coords) -> np.ndarray:
 
 
 def random_nodes(seed, n_agents, l=5):
+    """Random coordinates for each node"""
     set_seeds(seed)
-    # random coordinates
     # TODO: without replacement and minimum distance between nodes
     x_coords = np.random.uniform(-l//2, l//2, n_agents)
     y_coords = np.random.uniform(-l//2, l//2, n_agents)
-    # coords matrix
     coords = np.column_stack((x_coords, y_coords))
-    # distance matrix between nodes
     dist = distance_matrix(coords)
-
     return dist, coords
 
 
 def ring_nodes(n_agents, r=5):
+    """Place nodes in a circle"""
     # delta between each node in polar coordinates
     theta = 2 * np.pi / n_agents
-
     # nodes polar coordinates (theta, rho)
     coords_pol = np.zeros((n_agents, 2))
     coords_pol[0, :] = np.array([0, r])  # first node
-
     # assign position to node
     for i in range(n_agents - 1):
         coords_pol[i + 1, :] = np.array([coords_pol[i, 0] + theta, r])
-
     # nodes cartesian coordinates (x, y)
     coords = np.zeros((n_agents, 2))
     for i in range(n_agents):
         coords[i, :] = r * np.array([np.cos(coords_pol[i, 0]), np.sin(coords_pol[i, 0])])
-
     dist_mat = distance_matrix(coords)
-
     return dist_mat, coords
 
 
-def connect_agents(thresh, dist_mat, agents):
+# def grid_nodes(n_agents)
+
+
+def connect_agents(thresh, dist_mat: np.ndarray, agents: List[Agent]):
     """
     Check distance then add connection using update_neighbor method
-    One must ensure that the graph is connected before
+    One must ensure that the graph is connected
     """
     for i, agent in enumerate(agents):
         dist = dist_mat[i]
         # adjacency for the given agent as boolean array
         adj = np.logical_and(dist > 0., dist < thresh)
         # add agent_id of neighbors
-        agent.update_neighbor(np.where(adj)[0].tolist())
+        neighbors_ids = np.where(adj)[0].tolist()  # list of bool
+        # add agent objects to neighbors list
+        neighbors = [agents[j] for j in neighbors_ids]
+        # update neighbors list
+        agent.update_neighbors(neighbors)
 
 
-def adjacency_matrix(agents) -> np.ndarray:
-    # get the adjacency matrix given the agent objects
+def adjacency_matrix(agents: List[Agent]) -> np.ndarray:
+    """Get the adjacency matrix given the agent objects"""
     adj_mat = np.zeros((len(agents), len(agents)))
+
     for i, agent in enumerate(agents):
-        for j in agent.neighbors:
+        for j, _ in enumerate(agent.neighbors):
             adj_mat[i, j] = 1.
 
     return adj_mat
@@ -85,6 +87,7 @@ def laplacian_consensus(adjacency, eps=0.01) -> np.ndarray:
     # get the laplacian consensus matrix
     d_max = adjacency.sum(1).max()
     assert eps > 0. and eps < 1/d_max, "Broken Laplacian weights condition"
+
     degree_mat = np.diag(adjacency.sum(1))
     laplacian_mat = degree_mat - adjacency
     return np.eye(adjacency.shape[0]) - eps * laplacian_mat
@@ -107,7 +110,7 @@ def metropolis_consensus(adjacency, agents) -> np.ndarray:
     return metropolis_mat
 
 
-def plot_network(coords, agents, fname="network.pdf"):
+def plot_network(coords, agents: List[Agent], fname="network.pdf"):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     # plot agent nodes

@@ -1,7 +1,8 @@
 
 import numpy as np
 from mydata import dataset1, dataset2
-from network import random_nodes, ring_nodes, plot_network, connect_agents
+from network import (random_nodes, ring_nodes, plot_network,
+                     connect_agents, metropolis_consensus)
 from train import Agent
 from utils import LOG, set_seeds
 

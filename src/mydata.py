@@ -4,12 +4,13 @@ We analyze two scenarios, in each we have:
 - An agent-specific bias that modifies local targets
 """
 
+from types import SimpleNamespace
 import numpy as np
 
 from utils import set_seeds
 
 
-def split_data(data, n_samples, n_agents):
+def split_data(data, n_agents):
     # split data
     data_splits = np.split(data, n_agents)  # list of arrays 2D
 
@@ -20,7 +21,7 @@ def split_data(data, n_samples, n_agents):
         features_i = data_splits[i]  # [N,(p+p_i)]
 
         # generate weights from gaussian distribution
-        mu_i = [0.2, 0.1, np.random.rand()-0.5]  # [(p+p_i)]
+        mu_i = [0.2, -1.5, np.random.rand()-0.5]  # [(p+p_i)]
         sigma_i = [[1, 0, 0.5], [0, 1, 0], [0.5, 0, 1]]  # [(p+p_i),(p+p_i)]
         weights_i = np.random.multivariate_normal(mu_i, sigma_i)  # [(p+p_i)]
         # additive noise
@@ -70,29 +71,34 @@ def dataset2(seed, n_samples, n_agents):
 
 def main(opts):
     import matplotlib.pyplot as plt
+
     n_ag = opts.n_agents
     fig, axs = plt.subplots(n_ag//2, n_ag-n_ag//2, layout="constrained")
     fig.suptitle("Local targets distribution")
+
     # Dataset for scenario 1
     agent_splits = dataset1(opts.seed, opts.n_samples, opts.n_agents)
+
     for i, (agent_data, ax) in enumerate(zip(agent_splits, axs.flatten())):
         print("Agent", i)
+
         local_features = agent_data["features"]
         local_targets = agent_data["targets"]
         print("Features:", local_features.shape,
               "Targets:", local_targets.shape)
         print(local_features[:3], local_targets[:3])
         print()
+
         ax.hist(local_targets, bins=10, density=True)
         ax.set_title(f"Agent {i}")
     plt.show()
 
 
 if __name__ == "__main__":
-    from types import SimpleNamespace
     from ipdb import launch_ipdb_on_exception
 
-    config = dict(seed=42, n_samples=2000, n_agents=5)
+    config = dict(seed=42, n_samples=2000, n_agents=5,
+                  dataset="dataset1")
     opts = SimpleNamespace(**config)
 
     with launch_ipdb_on_exception():
