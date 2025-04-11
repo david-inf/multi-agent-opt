@@ -7,7 +7,6 @@ Multi-agent optimization for distributed least-squares regression
 
 - `configs/` folder with yaml configuration files
 - `plots/` folder with plotted results
-- `cmd_args.py` main program arguments
 - `main.py` main program
 - `mydata.py` utilities for dataset creation
 - `network.py` utilities for multi-agent network creation

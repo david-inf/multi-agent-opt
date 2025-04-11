@@ -1,10 +1,12 @@
 seed: 42
 
 dataset: dataset1
-n_samples: 1000
+n_samples: 2000
 
 n_agents: 10
 topology: random
-dist_thresh: 2.
+dist_thresh: 1.8
+maxiter: 10
 
-experiment_name: exp1
+experiment_name: data1_rand10
+log_every: 1  # logging for consensus algorithm

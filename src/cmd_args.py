@@ -5,8 +5,8 @@ import yaml
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--config", default="src/configs/exp1.yaml", help="YAML configuration file")
+parser.add_argument("--config", default="configs/exp1.yaml",
+                    help="YAML configuration file")
 
 
 def parse_args():

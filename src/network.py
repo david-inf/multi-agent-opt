@@ -7,7 +7,7 @@ import numpy.linalg as la
 from typing import List
 
 from train import Agent
-from utils import set_seeds
+from utils import set_seeds, LOG
 
 
 def distance_matrix(coords: np.ndarray) -> np.ndarray:
@@ -27,6 +27,7 @@ def random_nodes(seed, n_agents, l=5):
     """Random coordinates for each node"""
     set_seeds(seed)
     # TODO: without replacement and minimum distance between nodes
+    # TODO: minimum distance between nodes
     x_coords = np.random.uniform(-l//2, l//2, n_agents)
     y_coords = np.random.uniform(-l//2, l//2, n_agents)
     coords = np.column_stack((x_coords, y_coords))
@@ -63,7 +64,7 @@ def connect_agents(thresh, dist_mat: np.ndarray, agents: List[Agent]):
     for i, agent in enumerate(agents):
         dist = dist_mat[i]
         # adjacency for the given agent as boolean array
-        adj = np.logical_and(dist > 0., dist < thresh)
+        adj = np.logical_and(dist > 1e-2, dist < thresh)
         # add agent_id of neighbors
         neighbors_ids = np.where(adj)[0].tolist()  # list of bool
         # add agent objects to neighbors list
@@ -77,8 +78,8 @@ def adjacency_matrix(agents: List[Agent]) -> np.ndarray:
     adj_mat = np.zeros((len(agents), len(agents)))
 
     for i, agent in enumerate(agents):
-        for j, _ in enumerate(agent.neighbors):
-            adj_mat[i, j] = 1.
+        for neighbor in agent.neighbors:
+            adj_mat[i, neighbor.agent_id] = 1.
 
     return adj_mat
 
@@ -100,9 +101,9 @@ def metropolis_consensus(adjacency, agents) -> np.ndarray:
     for i, agent in enumerate(agents):
         # build off-diagonal first
         neighbor_sum = 0
-        for j in agent.neighbors:
-            weight_ij = 1 / (1 + max(agent.degree, agents[j].degree))
-            metropolis_mat[i, j] = weight_ij
+        for j, neighbor in enumerate(agent.neighbors):
+            weight_ij = 1 / (1 + max(agent.degree, neighbor.degree))
+            metropolis_mat[i, neighbor.agent_id] = weight_ij
             neighbor_sum += weight_ij
         # then build diagonal
         metropolis_mat[i, i] = 1 - neighbor_sum
@@ -119,16 +120,13 @@ def plot_network(coords, agents: List[Agent], fname="network.pdf"):
     for i, agent in enumerate(agents):
         ax.text(coords[i, 0]+0.15, coords[i, 1]+0.15, str(i),
                 fontsize=12, ha="center", va="center")
-        for j in agent.neighbors:
-            ax.plot([coords[i, 0], coords[j, 0]], [
-                    coords[i, 1], coords[j, 1]], "c-")
+        for j, neighbor in enumerate(agent.neighbors):
+            ax.plot([coords[i, 0], coords[neighbor.agent_id, 0]], [
+                    coords[i, 1], coords[neighbor.agent_id, 1]], "c:")
     # decorate
     ax.grid(True, which="both", axis="both")
-    ax.set_xlabel(r"$x$")
-    ax.set_ylabel(r"$y$")
+    ax.set_xlabel(r"$x$"); ax.set_ylabel(r"$y$")
     ax.set_aspect('equal', adjustable='box')
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
     # save network plot
     output_dir = os.path.join("plots", fname)
     os.makedirs("plots", exist_ok=True)
@@ -136,44 +134,49 @@ def plot_network(coords, agents: List[Agent], fname="network.pdf"):
 
 
 def main(opts):
+    """Main program for checking topology and connections"""
     # generate nodes
     if opts.topology == "random":
         dist_mat, coords = random_nodes(opts.seed, opts.n_agents)
-    # elif opts.topology == "circle":
-    #     dist_mat, coords = circle_nodes(opts.n_agent)
+    elif opts.topology == "ring":
+        dist_mat, coords = ring_nodes(opts.n_agents)
     else:
         raise ValueError(f"Unknown topology {opts.topology}")
+
     # create agents
-    agents = [Agent(i) for i in range(opts.n_agents)]
+    agents = [Agent(i, None, None) for i in range(opts.n_agents)]
     # connect agents that are near
     connect_agents(opts.dist_thresh, dist_mat, agents)
-    [print(agent) for agent in agents]
+    for agent in agents:
+        LOG.info(agent)
+        LOG.info("") 
     # print adjacency matrix
     adj_mat = adjacency_matrix(agents)
-    print("\nAdjacency matrix:")
-    print(adj_mat)
+    LOG.info("\nAdjacency matrix:")
+    LOG.info(adj_mat)
     # plot network
-    plot_network(coords, agents)
+    plot_network(coords, agents, opts.topology + str(opts.n_agents) + ".pdf")
 
     # laplacian weights
-    lap_weights = laplacian_consensus(adj_mat)
-    print("\nLaplacian weights:")
-    print(lap_weights)
-    print(lap_weights.sum(1))
+    # lap_weights = laplacian_consensus(adj_mat)
+    # LOG.info("\nLaplacian weights:")
+    # with np.printoptions(precision=4):
+    #     LOG.info(lap_weights)
+    #     LOG.info(lap_weights.sum(1))
 
     # metropolis weights
-    metr_weights = metropolis_consensus(adj_mat, agents)
-    print("\nMetropolis weights:")
-    print(metr_weights)
-    print(metr_weights.sum(1))
+    # metr_weights = metropolis_consensus(adj_mat, agents)
+    # LOG.info("\nMetropolis weights:")
+    # with np.printoptions(precision=4):
+    #     LOG.info(metr_weights)
+    #     LOG.info(metr_weights.sum(1))
 
 
 if __name__ == "__main__":
+    from cmd_args import parse_args
     from ipdb import launch_ipdb_on_exception
 
-    config = dict(seed=42, n_samples=1000, n_agents=8, dist_thresh=3.,
-                  topology="random")
-    opts = SimpleNamespace(**config)
+    opts = parse_args()
 
     with launch_ipdb_on_exception():
         main(opts)
