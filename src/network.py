@@ -22,7 +22,7 @@ def distance_matrix(coords) -> np.ndarray:
     return dist_mat
 
 
-def generate_nodes(seed, n_agents, l=5):
+def random_nodes(seed, n_agents, l=5):
     set_seeds(seed)
     # random coordinates
     # TODO: without replacement and minimum distance between nodes
@@ -34,6 +34,28 @@ def generate_nodes(seed, n_agents, l=5):
     dist = distance_matrix(coords)
 
     return dist, coords
+
+
+def ring_nodes(n_agents, r=5):
+    # delta between each node in polar coordinates
+    theta = 2 * np.pi / n_agents
+
+    # nodes polar coordinates (theta, rho)
+    coords_pol = np.zeros((n_agents, 2))
+    coords_pol[0, :] = np.array([0, r])  # first node
+
+    # assign position to node
+    for i in range(n_agents - 1):
+        coords_pol[i + 1, :] = np.array([coords_pol[i, 0] + theta, r])
+
+    # nodes cartesian coordinates (x, y)
+    coords = np.zeros((n_agents, 2))
+    for i in range(n_agents):
+        coords[i, :] = r * np.array([np.cos(coords_pol[i, 0]), np.sin(coords_pol[i, 0])])
+
+    dist_mat = distance_matrix(coords)
+
+    return dist_mat, coords
 
 
 def connect_agents(thresh, dist_mat, agents):
@@ -112,7 +134,12 @@ def plot_network(coords, agents, fname="network.pdf"):
 
 def main(opts):
     # generate nodes
-    dist_mat, coords = generate_nodes(opts.seed, opts.n_agents)
+    if opts.topology == "random":
+        dist_mat, coords = random_nodes(opts.seed, opts.n_agents)
+    # elif opts.topology == "circle":
+    #     dist_mat, coords = circle_nodes(opts.n_agent)
+    else:
+        raise ValueError(f"Unknown topology {opts.topology}")
     # create agents
     agents = [Agent(i) for i in range(opts.n_agents)]
     # connect agents that are near
@@ -141,7 +168,8 @@ def main(opts):
 if __name__ == "__main__":
     from ipdb import launch_ipdb_on_exception
 
-    config = dict(seed=42, n_samples=1000, n_agents=8, dist_thresh=3.)
+    config = dict(seed=42, n_samples=1000, n_agents=8, dist_thresh=3.,
+                  topology="random")
     opts = SimpleNamespace(**config)
 
     with launch_ipdb_on_exception():

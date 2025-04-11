@@ -16,14 +16,12 @@ class Agent:
     def __init__(
             self,
             agent_id: int,
-            global_features,  # array [N, p]
-            local_features,  # array [N, p_i]
+            features,  # array [N, (p+p_i)]
             local_targets,  # array [N]
     ):
         self.agent_id = agent_id
 
-        self.global_features = global_features
-        self.local_features = local_features
+        self.features = features
         self.targets = local_targets
 
         # local solution: 2 global and 1 local weights
@@ -35,18 +33,18 @@ class Agent:
 
     def train(self):
         """Closed-form solution for local least-squares"""
-        local_model = np.column_stack(
-            (self.global_features, self.local_features))  # [N, p+p_i]
-        q_i = local_model.T.dot(self.targets)
-        omega_i = local_model.T.dot(local_model)
-        w_ast_i = la.inv(omega_i).dot(q_i)
-        # update local solution
-        self.w_i = w_ast_i
-        # return self.w_i
+        q_i = self.targets.dot(self.features)  # [p+p_i]
+        omega_i = self.features.T.dot(self.features)
+        self.w_i = la.inv(omega_i).dot(q_i)  # w_i^\ast
 
     def update_neighbor(self, neighbors):
-        self.neighbors.extend(neighbors)
-        self.degree = len(self.neighbors)
+        self.neighbors.extend(neighbors)  # add neighbors
+        self.degree = len(self.neighbors)  # update node degree
+
+    def consensus_step(self):
+        # consensus algorithm single step
+        # we can only fuse the common parameters
+        q_1i = 
 
     def __str__(self):
         with np.printoptions(precision=4):
@@ -56,6 +54,8 @@ class Agent:
             return LOG.info(msg)
 
 
+# TODO: centralized Server class or update agents in a separated way?
+# cioè faccio tutto centralizzato oppure lascio che gli agenti si aggiornino da soli?
 class Server:
     """
     Server class that fuse informations from each agent in the network
@@ -63,6 +63,7 @@ class Server:
 
     def __init__(
             self,
-            agents,
+            agents,  # list of Agent objects
+            max_iter,  # consensus iterations
     ):
-        self.agents = agents  # list of Agent objects
+        self.agents = agents
