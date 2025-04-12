@@ -60,7 +60,7 @@ class Agent:
         # reverse weights order: first this node then neighbors weights
         self.metropolis = new_weights[::-1]  # update attribute
 
-    def train(self) -> None:
+    def fit(self) -> None:
         """Closed-form solution for local least-squares"""
         # compute local solution (solve least-squares)
         q_i = self.targets.dot(self.features)  # [p+p_i]
@@ -142,7 +142,7 @@ def consensus_algorithm(opts, agents: List[Agent]):
     """Run consensus algorithm"""
     # start with each agent solving local least-squares
     for agent in agents:
-        agent.train()
+        agent.fit()
 
     # sync agents local solutions
     for l in range(opts.maxiter):  # l=1,...,L
@@ -172,5 +172,8 @@ def consensus_algorithm(opts, agents: List[Agent]):
     LOG.info("\nAgent-specific solutions")
     for agent in agents:
         agent.local_consensus()
+        rmse_score = rmse(agent.targets, agent.features.dot(agent.w_i))
+        r2_score = r2(agent.targets, agent.features.dot(agent.w_i))
         with np.printoptions(precision=4):
-            LOG.info(f"Agent {agent.agent_id}, w_i={agent.w_i}")
+            LOG.info(f"Agent {agent.agent_id}, w_i={agent.w_i},"
+                     f" RMSE={rmse_score:.2f}, R2={r2_score:.2f}")

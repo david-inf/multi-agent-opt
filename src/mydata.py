@@ -5,10 +5,12 @@ We analyze two scenarios, in each we have:
 """
 
 import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from utils import set_seeds, LOG
 
-
+# TODO: consider a test set
 def split_data(data, n_agents):
     # split data
     data_splits = np.array_split(data, n_agents)  # list of arrays 2D
@@ -20,18 +22,13 @@ def split_data(data, n_agents):
         features_i = data_splits[i]  # [N,(p+p_i)]
 
         # generate weights from gaussian distribution
-        # TODO: consider fixing the weights or reducing variability
-        # for getting the actual weights the clt applies to n_agents
         mu_i = [0.5, -0.8, np.random.rand()-0.5]  # [(p+p_i)]
         with np.printoptions(precision=4):
             LOG.info(f"Agent {i}, mu={np.array(mu_i)}")
-        sigma_i = [[1., 0.5, 0.], [0.5, 1., 0.], [0., 0., 0.3]]  # [(p+p_i),(p+p_i)]
+        sigma_i = [[1., 0.5, 0.],
+                   [0.5, 1., 0.],
+                   [0., 0., 0.3]]  # [(p+p_i),(p+p_i)]
         weights_i = np.random.multivariate_normal(mu_i, sigma_i)  # [(p+p_i)]
-
-        # TODO: weights with fixed common part
-        # weights_i = [0.5, -0.8, 2*np.random.rand()-1]
-        # with np.printoptions(precision=4):
-        #     LOG.info(f"Agent {i}, weights={np.array(weights_i)}")
 
         # additive noise
         noise = 0.8*np.random.randn(features_i.shape[0])  # [N]
@@ -56,6 +53,10 @@ def dataset1(seed, n_samples, n_agents):
     x1 = np.random.uniform(-10, 10, n_samples)
     x2 = np.random.uniform(-1, 1, n_samples)
     global_features = np.column_stack((x1, x2))  # coefficients
+    # normalize
+    scaler = StandardScaler()
+    global_features = scaler.fit_transform(global_features)
+    # put together with local features
     local_features = np.ones(n_samples)  # bias
     data = np.column_stack((global_features, local_features))
 
@@ -71,6 +72,10 @@ def dataset2(seed, n_samples, n_agents):
     x1 = np.random.uniform(-1, 1, n_samples)
     x2 = np.random.uniform(-10, 10, n_samples)
     global_features = np.column_stack((x1, x2))  # coefficients
+    # normalize
+    scaler = StandardScaler()
+    global_features = scaler.fit_transform(global_features)
+    # put together with local features
     local_features = np.ones(n_samples)  # bias
     data = np.column_stack((global_features, local_features))
 
