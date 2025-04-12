@@ -29,18 +29,21 @@ class Agent:
     ):
         self.agent_id = agent_id
 
-        self.features = features
+        self.features = features  # local fraction
         self.targets = local_targets
         self.p = p  # for slicing operations
 
         # local solution: 2 (p) common and 1 (p_i) specific w_i = (w, theta_i)
         self.w_i = np.zeros(p+p_i)  # full solution
-        self._q_1i, self._omega_1i = [np.zeros(p), np.zeros((p, p))]  # consensus
+        # consensus variables for common part
+        self._q_1i, self._omega_1i = [np.zeros(p), np.zeros((p, p))]
+        # buffer when waiting to sync
         self._q_1i_next, self._omega_1i_next = self._q_1i.copy(), self._omega_1i.copy()
 
-        # local parameters distribution
-        self.mu_i, self.sigma_i = [np.zeros(p+p_i), np.zeros((p+p_i, p+p_i))]  # local
-        self.mu_i_new, self.sigma_i_new = self.mu_i.copy(), self.sigma_i.copy()  # consensus
+        # local parameters distribution, won't be updated
+        self.mu_i, self.sigma_i = [np.zeros(p+p_i), np.zeros((p+p_i, p+p_i))]
+        # same distribution that will be aligned with consensus
+        self.mu_i_new, self.sigma_i_new = self.mu_i.copy(), self.sigma_i.copy()
 
         self.neighbors: List["Agent"] = []  # list of Agent objects
         self.degree = len(self.neighbors)  # node degree
@@ -105,8 +108,10 @@ class Agent:
         self._q_1i = self._q_1i_next.copy()
         self._omega_1i = self._omega_1i_next.copy()
         # update common distribution
-        self.mu_i_new[:self.p] = la.inv(self._omega_1i_next).dot(self._q_1i_next)  # \mu_{1i}(l)
-        self.sigma_i_new[:self.p, :self.p] = la.inv(self._omega_1i_next)  # P_{1i}(l)
+        self.mu_i_new[:self.p] = la.inv(self._omega_1i_next).dot(
+            self._q_1i_next)  # \mu_{1i}(l)
+        self.sigma_i_new[:self.p, :self.p] = la.inv(
+            self._omega_1i_next)  # P_{1i}(l)
         # update common part
         self.w_i[:self.p] = self.mu_i_new[:self.p].copy()
 
