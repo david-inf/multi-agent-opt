@@ -1,16 +1,15 @@
 
 import numpy as np
 from mydata import get_dataset
-from network import (random_nodes, ring_nodes, plot_network,
-                     connect_agents, metropolis_consensus)
+from network import random_nodes, ring_nodes, connect_agents
 from train import Agent, consensus_algorithm
 from utils import LOG, set_seeds
 
 
 def agents_setup(opts):
-    dataset_fun = get_dataset(opts.dataset)
+    """Init agents with data"""
     # Get global dataset and agent-specific biases
-    agent_splits = dataset_fun(opts.seed, opts.n_samples, opts.n_agents)
+    agent_splits = get_dataset(opts)
     # Agents
     agents = []
     for i in range(opts.n_agents):
@@ -24,8 +23,9 @@ def agents_setup(opts):
 
 
 def get_network(opts):
+    """Generate network topology"""
     if opts.topology == "random":
-        dist_mat, coords = random_nodes(opts.seed, opts.n_agents)
+        dist_mat, coords = random_nodes(opts.seed, opts.n_agents, opts.grid_size)
     elif opts.topology == "ring":
         dist_mat, coords = ring_nodes(opts.n_agents)
     else:

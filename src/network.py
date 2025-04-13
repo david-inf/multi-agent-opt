@@ -53,9 +53,6 @@ def ring_nodes(n_agents, r=5):
     return dist_mat, coords
 
 
-# def grid_nodes(n_agents)
-
-
 def connect_agents(thresh, dist_mat: np.ndarray, agents: List[Agent]):
     """
     Check distance then add connection using update_neighbor method
@@ -111,7 +108,7 @@ def metropolis_consensus(adjacency, agents) -> np.ndarray:
     return metropolis_mat
 
 
-def plot_network(coords, agents: List[Agent], fname="network.pdf"):
+def plot_network(coords, agents: List[Agent], fname="network.png"):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     # plot agent nodes
@@ -137,7 +134,7 @@ def main(opts):
     """Main program for checking topology and connections"""
     # generate nodes
     if opts.topology == "random":
-        dist_mat, coords = random_nodes(opts.seed, opts.n_agents)
+        dist_mat, coords = random_nodes(opts.seed, opts.n_agents, opts.grid_size)
     elif opts.topology == "ring":
         dist_mat, coords = ring_nodes(opts.n_agents)
     else:
@@ -149,13 +146,15 @@ def main(opts):
     connect_agents(opts.dist_thresh, dist_mat, agents)
     for agent in agents:
         LOG.info(agent)
-        LOG.info("") 
+        LOG.info("")
+
     # print adjacency matrix
-    adj_mat = adjacency_matrix(agents)
-    LOG.info("\nAdjacency matrix:")
-    LOG.info(adj_mat)
+    # adj_mat = adjacency_matrix(agents)
+    # LOG.info("\nAdjacency matrix:")
+    # LOG.info(adj_mat)
+
     # plot network
-    plot_network(coords, agents, opts.topology + str(opts.n_agents) + ".pdf")
+    plot_network(coords, agents, opts.topology + str(opts.n_agents) + ".png")
 
     # laplacian weights
     # lap_weights = laplacian_consensus(adj_mat)

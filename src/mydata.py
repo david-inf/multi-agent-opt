@@ -5,92 +5,61 @@ We analyze two scenarios, in each we have:
 """
 
 import numpy as np
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from utils import set_seeds, LOG, AverageMeter
 
-from utils import set_seeds, LOG
 
-# TODO: consider a test set
-def split_data(data, n_agents):
+def split_data(shared_features, n_samples, n_agents):
     # split data
-    data_splits = np.array_split(data, n_agents)  # list of arrays 2D
+    features = np.column_stack((shared_features, np.ones(n_samples)))
+    data_splits = np.array_split(features, n_agents)  # list of arrays 2D
 
-    targets_splits = []  # list of arrays 1D
+    w_local = AverageMeter()
     agent_splits = []  # list of dict
     for i in range(n_agents):
         # local split
         features_i = data_splits[i]  # [N,(p+p_i)]
 
         # generate weights from gaussian distribution
-        mu_i = [0.5, -0.8, np.random.rand()-0.5]  # [(p+p_i)]
-        with np.printoptions(precision=4):
-            LOG.info(f"Agent {i}, mu={np.array(mu_i)}")
-        sigma_i = [[1., 0.5, 0.],
-                   [0.5, 1., 0.],
-                   [0., 0., 0.3]]  # [(p+p_i),(p+p_i)]
-        weights_i = np.random.multivariate_normal(mu_i, sigma_i)  # [(p+p_i)]
+        mu_i = [0.5, -1.5, 0.2]  # [(p+p_i)]
+        sigma_i = 0.1 * np.eye(3)  # [(p+p_i),(p+p_i)]
+        # sigma_i = np.zeros((3,3))  # just as test
 
-        # additive noise
+        weights_i = np.random.multivariate_normal(mu_i, sigma_i)  # [(p+p_i)]
+        w_local.update(weights_i)
+
+        with np.printoptions(precision=4):
+            LOG.info(f"Agent {i}, w_i={weights_i}")
+
+        # additive noise then local targets
         noise = 0.8*np.random.randn(features_i.shape[0])  # [N]
-        # agent-specific targets
-        local_targets = features_i.dot(weights_i) + noise  # [N]
-        targets_splits.append(local_targets)
+        targets_i = features_i.dot(weights_i) + noise  # [N]
 
         # add to agent splits
-        agent_data = {}
-        agent_data["features"] = features_i  # [N,(x1,x2,1)]
-        agent_data["targets"] = local_targets  # [N]
+        agent_data = dict(features=features_i, targets=targets_i)
         agent_splits.append(agent_data)
+
+    with np.printoptions(precision=4):
+        LOG.info(f"Synthetic w_i_avg={w_local.avg}\n")
 
     return agent_splits  # list of dict
 
 
-def dataset1(seed, n_samples, n_agents):
-    """Global data for scenario 1"""
-    set_seeds(seed)
-
-    # generate the full dataset p=2, p_i=1
-    x1 = np.random.uniform(-10, 10, n_samples)
-    x2 = np.random.uniform(-1, 1, n_samples)
-    global_features = np.column_stack((x1, x2))  # coefficients
-    # normalize
-    scaler = StandardScaler()
-    global_features = scaler.fit_transform(global_features)
-    # put together with local features
-    local_features = np.ones(n_samples)  # bias
-    data = np.column_stack((global_features, local_features))
-
-    agent_splits = split_data(data, n_agents)
-    return agent_splits
-
-
-def dataset2(seed, n_samples, n_agents):
-    """Global data for scenario 2"""
-    set_seeds(seed)
-
-    # generate the full dataset p=2, p_i=1
-    x1 = np.random.uniform(-1, 1, n_samples)
-    x2 = np.random.uniform(-10, 10, n_samples)
-    global_features = np.column_stack((x1, x2))  # coefficients
-    # normalize
-    scaler = StandardScaler()
-    global_features = scaler.fit_transform(global_features)
-    # put together with local features
-    local_features = np.ones(n_samples)  # bias
-    data = np.column_stack((global_features, local_features))
-
-    agent_splits = split_data(data, n_agents)
-    return agent_splits
-
-
-def get_dataset(dataset_name):
-    if dataset_name == "dataset1":
-        dataset_fun = dataset1
-    elif dataset_name == "dataset2":
-        dataset_fun = dataset2
+def get_dataset(opts):
+    set_seeds(opts.seed)
+    # p=2 and p_i=1
+    if opts.dataset == "dataset1":  # scenario 1
+        x1 = np.random.uniform(-10, 10, opts.n_samples)
+        x2 = np.random.uniform(-1, 1, opts.n_samples)
+    elif opts.dataset == "dataset2":  # scenario 2
+        x1 = np.random.uniform(-1, 1, opts.n_samples)
+        x2 = np.random.uniform(-10, 10, opts.n_samples)
     else:
-        raise ValueError(f"Unknown dataset {dataset_name}")
-    return dataset_fun
+        raise ValueError(f"Unknown dataset {opts.dataset}")
+
+    shared_features = np.column_stack((x1, x2))
+    agent_splits = split_data(shared_features, opts.n_samples, opts.n_agents)
+
+    return agent_splits
 
 
 def main(opts):
@@ -101,8 +70,7 @@ def main(opts):
     fig, axs = plt.subplots(n_ag//2, 4, layout="constrained")
     fig.suptitle("Local targets distribution")
 
-    dataset_fun = get_dataset(opts.dataset)
-    agent_splits = dataset_fun(opts.seed, opts.n_samples, opts.n_agents)
+    agent_splits = get_dataset(opts)
 
     for i, (agent_data, ax) in enumerate(zip(agent_splits, axs.flatten())):
         LOG.info(f"Agent: {i}")
@@ -116,14 +84,13 @@ def main(opts):
 
         ax.hist(local_targets, bins=10, density=True)
         ax.set_title(f"Agent {i}")
+
     plt.show()
 
 
 if __name__ == "__main__":
     from cmd_args import parse_args
     from ipdb import launch_ipdb_on_exception
-
     opts = parse_args()
-
     with launch_ipdb_on_exception():
         main(opts)

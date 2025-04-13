@@ -3,12 +3,9 @@ from typing import List
 import numpy as np
 import numpy.linalg as la
 
-from sklearn.metrics import root_mean_squared_error as rmse
-from sklearn.metrics import r2_score as r2
-
+from utils import rmse, r2, plot_metric
 from tqdm import tqdm
-
-from utils import LOG
+from utils import LOG, AverageMeter
 
 
 class Agent:
@@ -16,7 +13,7 @@ class Agent:
     Class for a single agent in the network
     - each agent doesn't know how many other agents are in the network,
         the agent just knows the other agents in its neighborhood
-    - 
+    -
     """
 
     def __init__(
@@ -89,6 +86,10 @@ class Agent:
         self._q_1i = la.inv(sigma_11i).dot(mu_1i)  # [p]
         self._omega_1i = la.inv(sigma_11i)  # [p,p]
 
+    def predict(self, features: np.ndarray) -> np.ndarray:
+        """Predict targets for given features"""
+        return features.dot(self.w_i)
+
     def consensus_step(self) -> None:
         """Single consensus step on common parameters"""
         # consensus init
@@ -103,7 +104,7 @@ class Agent:
             self._q_1i_next += pi_ij[j] * neighbor._q_1i
             self._omega_1i_next += pi_ij[j] * neighbor._omega_1i
 
-    def sync(self):
+    def sync(self) -> None:
         """Effective consensus step"""
         self._q_1i = self._q_1i_next.copy()
         self._omega_1i = self._omega_1i_next.copy()
@@ -115,7 +116,7 @@ class Agent:
         # update common part
         self.w_i[:self.p] = self.mu_i_new[:self.p].copy()
 
-    def local_consensus(self):
+    def local_consensus(self) -> None:
         """Update agent-specific parameters, only one step needed"""
         sigma_11i = self.sigma_i[:self.p, :self.p]
         sigma_21i = self.sigma_i[self.p:, :self.p]
@@ -136,49 +137,104 @@ class Agent:
         """String representation of the agent"""
         with np.printoptions(precision=4):
             msg = f"Agent {self.agent_id}, " \
-                f"neighbors: {[neighbor.agent_id for neighbor in self.neighbors]}," \
-                f" degree: {self.degree}" \
-                f"\nLocal solution: {self.w_i}" \
-                f"\nMetropolis weights: {np.array(self.metropolis)}"
+                f"neighbors={[neighbor.agent_id for neighbor in self.neighbors]}," \
+                f" degree={self.degree}" \
+                f"\nLocal solution={self.w_i}" \
+                f"\nMetropolis weights={np.array(self.metropolis)}"
             return msg
 
 
 def consensus_algorithm(opts, agents: List[Agent]):
     """Run consensus algorithm"""
-    # start with each agent solving local least-squares
+
+    rmse_score = AverageMeter()
+    r2_score = AverageMeter()
+    w_local = AverageMeter()
     for agent in agents:
-        agent.fit()
+        agent.fit()  # local least-squares problem
+        w_local.update(agent.w_i)
 
+        # Check fit on local data
+        pred = agent.predict(agent.features)
+        rmse_score.update(rmse(agent.targets, pred))
+        r2_score.update(r2(agent.targets, pred))
+
+    with np.printoptions(precision=4):
+        LOG.info(f"Local w_i_avg={w_local.avg}"
+                 f" RMSE_avg={rmse_score.avg:.2f} R2_avg={r2_score.avg:.2f}")
+        print()
+
+    # TODO: consider using comet_ml
+    errs_list, rmse_list, r2_list = [], [], []
     # sync agents local solutions
-    for l in range(opts.maxiter):  # l=1,...,L
+    for l in range(opts.maxiter):
         # for l in tqdm(range(maxiter), desc="Iterations", unit="it"):
-        # consensus step
-        for agent in agents:
-            # first let all agents align
-            agent.consensus_step()
+        cons_err, rmse_avg, r2_avg = _make_consensus(opts, agents, l)
 
-        # effective step
-        mean_weights = np.zeros(2)  # [p] only the common part
-        for agent in agents:
-            # now update variables
-            agent.sync()
-            mean_weights += agent.w_i[:agent.p].copy()
-        mean_weights /= len(agents)
+        errs_list.append(cons_err)
+        rmse_list.append(rmse_avg)
+        r2_list.append(r2_avg)
 
-        # compute something for performance monitoring
-        if l % opts.log_every == 0 or l == opts.maxiter-1:
-            with np.printoptions(precision=4):
-                LOG.info(f"\nIteration [{l+1}/{opts.maxiter}]")
-                LOG.info(f"Mean common w={mean_weights}")
-                for agent in agents:
-                    LOG.info(f"Agent {agent.agent_id}, w={agent.w_i[:2]}")
-
-    # update agent-specific parameters
-    LOG.info("\nAgent-specific solutions")
+    print()
+    # update agent-specific parameters, just a single step
+    rmse_score = AverageMeter()
+    r2_score = AverageMeter()
+    w_local = AverageMeter()
     for agent in agents:
         agent.local_consensus()
-        rmse_score = rmse(agent.targets, agent.features.dot(agent.w_i))
-        r2_score = r2(agent.targets, agent.features.dot(agent.w_i))
+        w_local.update(agent.w_i)
+
+        # check fit on local data
+        pred = agent.predict(agent.features)
+        rmse_i = rmse(agent.targets, pred)
+        rmse_score.update(rmse_i)
+        r2_i = r2(agent.targets, pred)
+        r2_score.update(r2_i)
+
         with np.printoptions(precision=4):
             LOG.info(f"Agent {agent.agent_id}, w_i={agent.w_i},"
-                     f" RMSE={rmse_score:.2f}, R2={r2_score:.2f}")
+                     f" RMSE={rmse_i:.2f}, R2={r2_i:.2f}")
+
+    print()
+    with np.printoptions(precision=4):
+        LOG.info(f"w_i_avg={w_local.avg} RMSE_avg={rmse_score.avg:.2f}"
+                 f" R2_avg={r2_score.avg:.2f}")
+
+    # log metrics to local directory in json format
+    # dump the above lists in a json file
+    plot_metric(errs_list, "Consensus error", opts.experiment_name+".png")
+
+
+def _make_consensus(opts, agents: List[Agent], l):
+    """Consensus step for each agent"""
+
+    for agent in agents:
+        agent.consensus_step()  # first let all agents make a step
+
+    rmse_score = AverageMeter()  # RMSE
+    r2_score = AverageMeter()  # R2
+    w_local = []
+    for agent in agents:
+        agent.sync()  # then update variables
+        w_local.append(agent.w_i)
+
+        # Check fit on local data
+        pred = agent.predict(agent.features)
+        rmse_score.update(rmse(agent.targets, pred))
+        r2_score.update(r2(agent.targets, pred))
+
+        # Consensus error: agreement on shared parameters
+        w_avg = np.mean(w_local, axis=0)  # [p]
+        _err_per_i = np.array(w_local) - w_avg  # [N,p]
+        cons_err = np.mean(la.norm(_err_per_i, axis=1) ** 2)
+
+    # compute something for performance monitoring
+    if l % opts.log_every == 0 or l == opts.maxiter-1:
+        with np.printoptions(precision=4):
+            LOG.info(f"Iteration [{l+1:03d}/{opts.maxiter}]"
+                     f" cons_err={cons_err:.6f}"
+                     f"\n  w_i_avg={w_avg}"
+                     f" RMSE_avg={rmse_score.avg:.2f}"
+                     f" R2_avg={r2_score.avg:.2f}")
+
+    return cons_err, rmse_score.avg, r2_score.avg
