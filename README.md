@@ -24,7 +24,7 @@ You can run the main program as follows (also works for `network.py` and `mydata
 python main.py --config configs/exp1.yaml
 ```
 
-## Distributed learning
+## :spider_web: Distributed learning
 
 The learning problem is the least-squares regression, it can be solved in closed form.
 
@@ -48,15 +48,15 @@ In both scenarios we generate the parameters in the same way, we may want to see
 
 We need to define a network topology and specify the number of agents, based on the topology there could be more parameters to set.
 
-There are various possibilities, here we consider these topologies:
-- Geometric: generate random 2D coordinates the connect two agents if their distance is below a given threshold (see `network.random_nodes()`)
-- Ring: display the nodes in a circle (see `network.ring_nodes`) as the previous the threshold should be provided here too
+There are various possibilities, here we consider the **ring** (named `random`, see `network.ring_nodes()`) topology where the nodes are displayed in a circle shape, and between two nodes there will be a connection if their distance is less than a threshold.
+<!-- - Geometric: generate random 2D coordinates the connect two agents if their distance is below a given threshold (see `network.random_nodes()`)
+- Ring: display the nodes in a circle (see `network.ring_nodes`) as the previous the threshold should be provided here too -->
 
 For example we can set in the YAML file: `topology: random` `n_agents: 10` `dist_thresh: 3.3` that corresponds to the geometric topology with 10 agents and a distance threshold of 3.3 between two agents under which they will be connected (added to the neighbors list respectively, available in `Agent.neighbors`).
 
-When adding agents to the neighbors list, the `.update_neighbors()` method must be called, this also updates the consensus weights for the current agent. We choose to use the Metropolis weights since we only want to exploit local informations available to all agents.
+When adding agents to the neighbors list, the `Agent.update_neighbors()` method must be called, this also updates the consensus weights for the current agent. We choose to use the Metropolis weights since we only want to exploit local informations available to all agents.
 
-Having $\mathcal{N}_i$ as the list of neighbors for the agent $i$, we can access the list as follows
+Having $\mathcal{N}_i$ as the list of neighbors for the agent $i$, we can access the neighbors list as follows
 
 ```python
 agent_i = Agent(1, features_i, targets_i)
@@ -106,12 +106,11 @@ for agent in agents:
     agent.local_consensus()
 ```
 
-## Results
+## :chart_with_downwards_trend: Results
 
 Here we provide results and working examples
 
-<details open>
-<summary>Network with 9 agents and dataset1</summary>
+### :one: Network with 9 agents and scenario 1
 
 <details>
 <summary>Configuration file</summary>
@@ -127,12 +126,6 @@ Here we provide results and working examples
 - `experiment_name: data1_rand9`
 - `log_every: 15`
 
-</details>
-
-Random network | Consensus error
--------------- | ----------------
-![network](src/plots/random9.png) | ![error](src/plots/data1_rand9.png)
-
 ```
 python network.py --config configs/exp1.yaml
 ```
@@ -140,6 +133,12 @@ python network.py --config configs/exp1.yaml
 ```
 python main.py --config configs/exp1.yaml
 ```
+
+</details>
+
+Random network | Consensus error
+-------------- | ----------------
+![network](src/plots/random9.png) | ![error](src/plots/data1_rand9.png)
 
 <details>
 <summary>Logging</summary>
@@ -193,10 +192,7 @@ w_i_avg=[ 0.5606 -1.446   0.3947] RMSE_avg=1.44 R2_avg=0.09
 
 </details>
 
-</details>
-
-<details open>
-<summary>Network with 12 agents and dataset1</summary>
+### :two: Network with 12 agents and scenario 1
 
 <details>
 <summary>Configuration file</summary>
@@ -212,12 +208,6 @@ w_i_avg=[ 0.5606 -1.446   0.3947] RMSE_avg=1.44 R2_avg=0.09
 - `experiment_name: data1_rand12`
 - `log_every: 15`
 
-</details>
-
-Random network | Consensus error
--------------- | ----------------
-![network](src/plots/random12.png) | ![error](src/plots/data1_rand12.png)
-
 ```
 python network.py --config configs/exp1.yaml
 ```
@@ -225,6 +215,12 @@ python network.py --config configs/exp1.yaml
 ```
 python main.py --config configs/exp1.yaml
 ```
+
+</details>
+
+Random network | Consensus error
+-------------- | ----------------
+![network](src/plots/random12.png) | ![error](src/plots/data1_rand12.png)
 
 <details>
 <summary>Logging</summary>
@@ -259,21 +255,21 @@ Agent 11 local solution w_i=[ 0.9806 -1.6607  0.4965], RMSE=0.79, R2=0.98
 Local w_i_avg=[ 0.6264 -1.6359  0.1679] RMSE_avg=0.80 R2_avg=0.91
 
 Iteration [001/100] cons_err=0.077981
-  w_i_avg=[ 0.6327 -1.6719  0.1679] RMSE_avg=1.83 R2_avg=0.43                                                                                               
+  w_i_avg=[ 0.6327 -1.6719  0.1679] RMSE_avg=1.83 R2_avg=0.43
 Iteration [016/100] cons_err=0.061298
-  w_i_avg=[ 0.6341 -1.6904  0.1679] RMSE_avg=2.00 R2_avg=0.31                                                                                               
+  w_i_avg=[ 0.6341 -1.6904  0.1679] RMSE_avg=2.00 R2_avg=0.31
 Iteration [031/100] cons_err=0.056201
-  w_i_avg=[ 0.6306 -1.6992  0.1679] RMSE_avg=1.99 R2_avg=0.32                                                                                               
+  w_i_avg=[ 0.6306 -1.6992  0.1679] RMSE_avg=1.99 R2_avg=0.32
 Iteration [046/100] cons_err=0.053975
-  w_i_avg=[ 0.6284 -1.7049  0.1679] RMSE_avg=1.99 R2_avg=0.32                                                                                               
+  w_i_avg=[ 0.6284 -1.7049  0.1679] RMSE_avg=1.99 R2_avg=0.32
 Iteration [061/100] cons_err=0.053000
-  w_i_avg=[ 0.6269 -1.7087  0.1679] RMSE_avg=1.99 R2_avg=0.32                                                                                               
+  w_i_avg=[ 0.6269 -1.7087  0.1679] RMSE_avg=1.99 R2_avg=0.32
 Iteration [076/100] cons_err=0.052573
-  w_i_avg=[ 0.6259 -1.7112  0.1679] RMSE_avg=1.99 R2_avg=0.32                                                                                               
+  w_i_avg=[ 0.6259 -1.7112  0.1679] RMSE_avg=1.99 R2_avg=0.32
 Iteration [091/100] cons_err=0.052386
-  w_i_avg=[ 0.6253 -1.7128  0.1679] RMSE_avg=1.99 R2_avg=0.32                                                                                               
+  w_i_avg=[ 0.6253 -1.7128  0.1679] RMSE_avg=1.99 R2_avg=0.32
 Iteration [100/100] cons_err=0.052329
-  w_i_avg=[ 0.625  -1.7135  0.1679] RMSE_avg=2.00 R2_avg=0.32                                                                                               
+  w_i_avg=[ 0.625  -1.7135  0.1679] RMSE_avg=2.00 R2_avg=0.32
 
 Agent 0, w_i=[ 0.6262 -1.7104  0.1277], RMSE=1.97, R2=0.24
 Agent 1, w_i=[ 0.622  -1.7213  0.3722], RMSE=2.28, R2=0.85
@@ -292,7 +288,3 @@ w_i_avg=[ 0.625  -1.7135  0.2067] RMSE_avg=1.99 R2_avg=0.32
 ```
 
 </details>
-
-</details>
-
-
