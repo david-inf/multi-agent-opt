@@ -108,150 +108,126 @@ for agent in agents:
 
 ## :chart_with_downwards_trend: Results
 
-Here we provide results and working examples
+Here we provide results for working examples
 
-### :one: Network with 9 agents and scenario 1
+### :one: Network with 9 agents
+
+Network | Scenario 1 | Scenario 2
+------- | ---------- | ----------
+![rand12](src/plots/random9.png) | ![err1](src/plots/data1_rand9.png) | ![err2](src/plots/data2_rand9.png)
 
 <details>
 <summary>Configuration file</summary>
 
 - `seed: 42`
-- `dataset: dataset1`
+- `dataset: dataset1` then `dataset2`
 - `n_samples: 12000`
 - `n_agents: 9`
 - `topology: random`
 - `grid_size: 5`
 - `dist_thresh: 2.8`
 - `maxiter: 60`
-- `experiment_name: data1_rand9`
+- `experiment_name: data1_rand9` then `data2_rand9`
 - `log_every: 15`
 
-```
-python network.py --config configs/exp1.yaml
-```
-
-```
-python main.py --config configs/exp1.yaml
-```
-
 </details>
-
-Random network | Consensus error
--------------- | ----------------
-![network](src/plots/random9.png) | ![error](src/plots/data1_rand9.png)
 
 <details>
 <summary>Logging</summary>
 
-```
-Agent 0, w_i=[ 0.3924 -0.8844  0.1844]
-Agent 1, w_i=[ 0.5646 -1.7176  0.1032]
-Agent 2, w_i=[ 0.0105 -1.6111  0.5271]
-Agent 3, w_i=[ 0.8012 -1.3788  0.4398]
-Agent 4, w_i=[ 0.6964 -1.433  -0.1841]
-Agent 5, w_i=[ 0.5154 -1.6344  0.7982]
-Agent 6, w_i=[ 0.5105 -1.5002  0.412 ]
-Agent 7, w_i=[ 0.8251 -1.4701  0.4211]
-Agent 8, w_i=[ 0.7572 -1.572   0.8429]
+<table>
+<tr>
+<th>Scenario 1</th>
+<th>Scenario 2</th>
+</tr>
+<tr>
+<td>
+
+```bash
 Synthetic w_i_avg=[ 0.5637 -1.4668  0.3939]
 
-Agent 0 local solution w_i=[ 0.3911 -0.8895  0.1921], RMSE=0.80, R2=0.90
-Agent 1 local solution w_i=[ 0.5621 -1.7148  0.0924], RMSE=0.80, R2=0.95
-Agent 2 local solution w_i=[ 0.0121 -1.5751  0.5094], RMSE=0.80, R2=0.57
-Agent 3 local solution w_i=[ 0.8016 -1.4482  0.4346], RMSE=0.77, R2=0.97
-Agent 4 local solution w_i=[ 0.6936 -1.4033 -0.2047], RMSE=0.76, R2=0.97
-Agent 5 local solution w_i=[ 0.5184 -1.6283  0.8378], RMSE=0.80, R2=0.94
-Agent 6 local solution w_i=[ 0.5038 -1.5415  0.3927], RMSE=0.81, R2=0.93
-Agent 7 local solution w_i=[ 0.827  -1.5578  0.3871], RMSE=0.80, R2=0.97
-Agent 8 local solution w_i=[ 0.7585 -1.5733  0.8624], RMSE=0.81, R2=0.97
 Local w_i_avg=[ 0.5631 -1.4813  0.3893] RMSE_avg=0.79 R2_avg=0.91
 
-Iteration [1/60] cons_err=0.118168
+Iteration [001/60] cons_err=0.118168
   w_i_avg=[ 0.5763 -1.473   0.3893] RMSE_avg=1.34 R2_avg=0.37
-Iteration [16/60] cons_err=0.102429
-  w_i_avg=[ 0.5614 -1.447   0.3893] RMSE_avg=1.43 R2_avg=0.10                                                                                               
-Iteration [31/60] cons_err=0.102381
-  w_i_avg=[ 0.5607 -1.4461  0.3893] RMSE_avg=1.44 R2_avg=0.09                                                                                               
-Iteration [46/60] cons_err=0.102381
-  w_i_avg=[ 0.5606 -1.446   0.3893] RMSE_avg=1.44 R2_avg=0.09                                                                                               
-Iteration [60/60] cons_err=0.102381
+Iteration [016/60] cons_err=0.102429
+  w_i_avg=[ 0.5614 -1.447   0.3893] RMSE_avg=1.43 R2_avg=0.10
+Iteration [031/60] cons_err=0.102381
+  w_i_avg=[ 0.5607 -1.4461  0.3893] RMSE_avg=1.44 R2_avg=0.09
+Iteration [046/60] cons_err=0.102381
+  w_i_avg=[ 0.5606 -1.446   0.3893] RMSE_avg=1.44 R2_avg=0.09
+Iteration [060/60] cons_err=0.102381
   w_i_avg=[ 0.5606 -1.446   0.3893] RMSE_avg=1.44 R2_avg=0.09
 
-Agent 0, w_i=[ 0.5606 -1.446   0.1967], RMSE=1.32, R2=0.72
-Agent 1, w_i=[ 0.5606 -1.446   0.0916], RMSE=0.82, R2=0.94
-Agent 2, w_i=[ 0.5606 -1.446   0.5685], RMSE=3.27, R2=-6.27
-Agent 3, w_i=[ 0.5606 -1.446   0.4015], RMSE=1.58, R2=0.89
-Agent 4, w_i=[ 0.5606 -1.446  -0.2087], RMSE=1.08, R2=0.93
-Agent 5, w_i=[ 0.5606 -1.446   0.8469], RMSE=0.84, R2=0.93
-Agent 6, w_i=[ 0.5606 -1.446   0.3997], RMSE=0.87, R2=0.92
-Agent 7, w_i=[ 0.5606 -1.446   0.3883], RMSE=1.72, R2=0.88
-Agent 8, w_i=[ 0.5606 -1.446   0.868 ], RMSE=1.42, R2=0.91
-
-w_i_avg=[ 0.5606 -1.446   0.3947] RMSE_avg=1.44 R2_avg=0.09  
+w_i_avg=[ 0.5606 -1.446   0.3947] RMSE_avg=1.44 R2_avg=0.09
 ```
+
+</td>
+<td>
+
+```bash
+Synthetic w_i_avg=[ 0.5637 -1.4668  0.3939]
+
+Local w_i_avg=[ 0.5581 -1.4683  0.3893] RMSE_avg=0.79 R2_avg=0.99
+
+Iteration [001/60] cons_err=0.116577
+  w_i_avg=[ 0.5865 -1.458   0.3893] RMSE_avg=1.26 R2_avg=0.95
+Iteration [016/60] cons_err=0.102419
+  w_i_avg=[ 0.5718 -1.4335  0.3893] RMSE_avg=1.37 R2_avg=0.94
+Iteration [031/60] cons_err=0.102381
+  w_i_avg=[ 0.571  -1.4326  0.3893] RMSE_avg=1.37 R2_avg=0.94
+Iteration [046/60] cons_err=0.102381
+  w_i_avg=[ 0.571  -1.4326  0.3893] RMSE_avg=1.37 R2_avg=0.94
+Iteration [060/60] cons_err=0.102381
+  w_i_avg=[ 0.571  -1.4326  0.3893] RMSE_avg=1.37 R2_avg=0.94
+
+w_i_avg=[ 0.571  -1.4326  0.3786] RMSE_avg=1.37 R2_avg=0.94
+```
+
+</td>
+</tr>
+</table>
 
 </details>
 
-### :two: Network with 12 agents and scenario 1
+
+### :two: Network with 12 agents
+
+Network | Scenario 1 | Scenario 2
+------- | ---------- | ----------
+![rand12](src/plots/random12.png) | ![err1](src/plots/data1_rand12.png) | ![err2](src/plots/data2_rand12.png)
+
 
 <details>
 <summary>Configuration file</summary>
 
 - `seed: 42`
-- `dataset: dataset1`
+- `dataset: dataset1` then `dataset2`
 - `n_samples: 20000`
 - `n_agents: 12`
 - `topology: random`
 - `grid_size: 5`
 - `dist_thresh: 2.2`
 - `maxiter: 100`
-- `experiment_name: data1_rand12`
+- `experiment_name: data1_rand12` and `data2_rand12`
 - `log_every: 15`
 
-```
-python network.py --config configs/exp1.yaml
-```
-
-```
-python main.py --config configs/exp1.yaml
-```
-
 </details>
-
-Random network | Consensus error
--------------- | ----------------
-![network](src/plots/random12.png) | ![error](src/plots/data1_rand12.png)
 
 <details>
 <summary>Logging</summary>
 
-```
-Agent 0, w_i=[ 0.3207 -1.589   0.1462]
-Agent 1, w_i=[ 0.9927 -1.5415  0.3978]
-Agent 2, w_i=[ 0.1778 -1.335   0.2539]
-Agent 3, w_i=[ 0.5452 -1.6204  0.0626]
-Agent 4, w_i=[ 0.4901 -1.2099  0.2077]
-Agent 5, w_i=[ 0.2651 -1.1861 -0.4145]
-Agent 6, w_i=[ 0.8328 -2.1729  0.2535]
-Agent 7, w_i=[ 0.5711 -1.8299  0.0889]
-Agent 8, w_i=[ 0.8641 -1.7585  0.2258]
-Agent 9, w_i=[ 0.1717 -2.5398 -0.0461]
-Agent 10, w_i=[ 1.2962 -1.1216  0.373 ]
-Agent 11, w_i=[ 0.9755 -1.6745  0.4874]
+<table>
+<tr>
+<th>Scenario 1</th>
+<th>Scenario 2</th>
+</tr>
+<tr>
+<td>
+
+```bash
 Synthetic w_i_avg=[ 0.6253 -1.6316  0.1697]
 
-Agent 0 local solution w_i=[ 0.3204 -1.5821  0.12  ], RMSE=0.82, R2=0.87
-Agent 1 local solution w_i=[ 0.9894 -1.5193  0.3872], RMSE=0.83, R2=0.98
-Agent 2 local solution w_i=[ 0.1836 -1.3317  0.2344], RMSE=0.80, R2=0.73
-Agent 3 local solution w_i=[ 0.54   -1.6427  0.021 ], RMSE=0.75, R2=0.95
-Agent 4 local solution w_i=[ 0.4871 -1.2323  0.2445], RMSE=0.81, R2=0.93
-Agent 5 local solution w_i=[ 0.2662 -1.244  -0.3933], RMSE=0.79, R2=0.82
-Agent 6 local solution w_i=[ 0.8307 -2.1222  0.2752], RMSE=0.83, R2=0.97
-Agent 7 local solution w_i=[ 0.5727 -1.8558  0.1021], RMSE=0.77, R2=0.96
-Agent 8 local solution w_i=[ 0.8691 -1.7495  0.2292], RMSE=0.79, R2=0.98
-Agent 9 local solution w_i=[ 0.1768 -2.5316 -0.0764], RMSE=0.81, R2=0.83
-Agent 10 local solution w_i=[ 1.3008 -1.1589  0.3739], RMSE=0.81, R2=0.99
-Agent 11 local solution w_i=[ 0.9806 -1.6607  0.4965], RMSE=0.79, R2=0.98
 Local w_i_avg=[ 0.6264 -1.6359  0.1679] RMSE_avg=0.80 R2_avg=0.91
 
 Iteration [001/100] cons_err=0.077981
@@ -271,20 +247,132 @@ Iteration [091/100] cons_err=0.052386
 Iteration [100/100] cons_err=0.052329
   w_i_avg=[ 0.625  -1.7135  0.1679] RMSE_avg=2.00 R2_avg=0.32
 
-Agent 0, w_i=[ 0.6262 -1.7104  0.1277], RMSE=1.97, R2=0.24
-Agent 1, w_i=[ 0.622  -1.7213  0.3722], RMSE=2.28, R2=0.85
-Agent 2, w_i=[ 0.622  -1.7213  0.284 ], RMSE=2.65, R2=-2.02
-Agent 3, w_i=[ 0.6221 -1.7208  0.0259], RMSE=0.89, R2=0.93
-Agent 4, w_i=[ 0.6297 -1.7014  0.2741], RMSE=1.18, R2=0.84
-Agent 5, w_i=[ 0.629  -1.7032 -0.3493], RMSE=2.21, R2=-0.43
-Agent 6, w_i=[ 0.6298 -1.7013  0.3112], RMSE=1.44, R2=0.92
-Agent 7, w_i=[ 0.6221 -1.7208  0.1083], RMSE=0.82, R2=0.95
-Agent 8, w_i=[ 0.6232 -1.7182  0.2346], RMSE=1.63, R2=0.90
-Agent 9, w_i=[ 0.622  -1.7213 -0.0395], RMSE=2.74, R2=-0.92
-Agent 10, w_i=[ 0.6298 -1.7013  0.5362], RMSE=3.89, R2=0.73
-Agent 11, w_i=[ 0.622  -1.7213  0.5956], RMSE=2.22, R2=0.86
-
 w_i_avg=[ 0.625  -1.7135  0.2067] RMSE_avg=1.99 R2_avg=0.32
 ```
+
+</td>
+<td>
+
+```bash
+Synthetic w_i_avg=[ 0.6253 -1.6316  0.1697]
+
+Local w_i_avg=[ 0.6371 -1.632   0.1679] RMSE_avg=0.80 R2_avg=0.99
+
+Iteration [001/100] cons_err=0.078895
+  w_i_avg=[ 0.6363 -1.6396  0.1679] RMSE_avg=1.87 R2_avg=0.95
+Iteration [016/100] cons_err=0.062099
+  w_i_avg=[ 0.6377 -1.6566  0.1679] RMSE_avg=1.97 R2_avg=0.94
+Iteration [031/100] cons_err=0.056568
+  w_i_avg=[ 0.635  -1.6659  0.1679] RMSE_avg=2.01 R2_avg=0.94
+Iteration [046/100] cons_err=0.054140
+  w_i_avg=[ 0.6335 -1.672   0.1679] RMSE_avg=2.03 R2_avg=0.93
+Iteration [061/100] cons_err=0.053074
+  w_i_avg=[ 0.6327 -1.6761  0.1679] RMSE_avg=2.05 R2_avg=0.93
+Iteration [076/100] cons_err=0.052606
+  w_i_avg=[ 0.6321 -1.6789  0.1679] RMSE_avg=2.07 R2_avg=0.93
+Iteration [091/100] cons_err=0.052400
+  w_i_avg=[ 0.6318 -1.6807  0.1679] RMSE_avg=2.08 R2_avg=0.93
+Iteration [100/100] cons_err=0.052337
+  w_i_avg=[ 0.6317 -1.6815  0.1679] RMSE_avg=2.08 R2_avg=0.93
+
+w_i_avg=[ 0.6317 -1.6815  0.1684] RMSE_avg=2.08 R2_avg=0.93
+```
+
+</td>
+</tr>
+</table>
+
+</details>
+
+
+### :three: Network with 20 agents
+
+Network | Scenario 1 | Scenario 2
+------- | ---------- | ----------
+![rand20](src/plots/random20.png) | ![error1](src/plots/data1_rand20.png) | ![error2](src/plots/data2_rand20.png)
+
+
+<details>
+<summary>Configuration file</summary>
+
+- `seed: 42`
+- `dataset: dataset1` and `dataset2`
+- `n_samples: 40000`
+- `n_agents: 20`
+- `topology: random`
+- `grid_size: 5`
+- `dist_thresh: 1.35`
+- `maxiter: 100`
+- `experiment_name: data1_rand20` and `data2_rand20`
+- `log_every: 15`
+
+</details>
+
+<details>
+<summary>Logging</summary>
+
+<table>
+<tr>
+<th>Scenario 1</th>
+<th>Scenario 2</th>
+</tr>
+<tr>
+<td>
+
+```bash
+Synthetic w_i_avg=[ 0.4081 -1.5619  0.2113]
+
+Local w_i_avg=[ 0.4087 -1.5707  0.2119] RMSE_avg=0.80 R2_avg=0.86
+
+Iteration [001/100] cons_err=0.102139
+  w_i_avg=[ 0.4029 -1.5829  0.2119] RMSE_avg=1.43 R2_avg=0.36
+Iteration [016/100] cons_err=0.082837
+  w_i_avg=[ 0.4161 -1.5796  0.2119] RMSE_avg=1.61 R2_avg=0.03
+Iteration [031/100] cons_err=0.080833
+  w_i_avg=[ 0.4241 -1.579   0.2119] RMSE_avg=1.62 R2_avg=-0.02
+Iteration [046/100] cons_err=0.079604
+  w_i_avg=[ 0.4305 -1.5787  0.2119] RMSE_avg=1.62 R2_avg=-0.05
+Iteration [061/100] cons_err=0.078734
+  w_i_avg=[ 0.4357 -1.5786  0.2119] RMSE_avg=1.63 R2_avg=-0.08
+Iteration [076/100] cons_err=0.078113
+  w_i_avg=[ 0.44   -1.5785  0.2119] RMSE_avg=1.63 R2_avg=-0.11
+Iteration [091/100] cons_err=0.077672
+  w_i_avg=[ 0.4436 -1.5785  0.2119] RMSE_avg=1.63 R2_avg=-0.13
+Iteration [100/100] cons_err=0.077471
+  w_i_avg=[ 0.4454 -1.5786  0.2119] RMSE_avg=1.64 R2_avg=-0.14
+
+w_i_avg=[ 0.4454 -1.5786  0.2365] RMSE_avg=1.64 R2_avg=-0.14
+```
+
+</td>
+<td>
+
+```bash
+Synthetic w_i_avg=[ 0.4081 -1.5619  0.2113]
+
+Local w_i_avg=[ 0.4143 -1.5628  0.2119] RMSE_avg=0.80 R2_avg=0.99
+
+Iteration [001/100] cons_err=0.103146
+  w_i_avg=[ 0.3888 -1.5606  0.2119] RMSE_avg=1.63 R2_avg=0.96
+Iteration [016/100] cons_err=0.080319
+  w_i_avg=[ 0.3988 -1.5614  0.2119] RMSE_avg=1.64 R2_avg=0.96
+Iteration [031/100] cons_err=0.078863
+  w_i_avg=[ 0.405  -1.5619  0.2119] RMSE_avg=1.65 R2_avg=0.96
+Iteration [046/100] cons_err=0.078180
+  w_i_avg=[ 0.4097 -1.5625  0.2119] RMSE_avg=1.65 R2_avg=0.96
+Iteration [061/100] cons_err=0.077725
+  w_i_avg=[ 0.4135 -1.5631  0.2119] RMSE_avg=1.65 R2_avg=0.96
+Iteration [076/100] cons_err=0.077401
+  w_i_avg=[ 0.4166 -1.5636  0.2119] RMSE_avg=1.65 R2_avg=0.96
+Iteration [091/100] cons_err=0.077170
+  w_i_avg=[ 0.4192 -1.564   0.2119] RMSE_avg=1.65 R2_avg=0.96
+Iteration [100/100] cons_err=0.077065
+  w_i_avg=[ 0.4205 -1.5643  0.2119] RMSE_avg=1.65 R2_avg=0.96
+
+w_i_avg=[ 0.4205 -1.5643  0.2149] RMSE_avg=1.65 R2_avg=0.96
+```
+</td>
+</tr>
+</table>
 
 </details>

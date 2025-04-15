@@ -1,13 +1,13 @@
 seed: 42
 
 dataset: dataset1
-n_samples: 20000
+n_samples: 12000
 
-n_agents: 12
+n_agents: 9
 topology: random
 grid_size: 5
-dist_thresh: 2.2
-maxiter: 100
+dist_thresh: 2.8
+maxiter: 60
 
-experiment_name: data1_rand12
+experiment_name: data1_rand9
 log_every: 15  # logging for consensus algorithm

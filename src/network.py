@@ -7,7 +7,8 @@ import numpy.linalg as la
 from typing import List
 
 from train import Agent
-from utils import set_seeds, LOG
+from utils import set_seeds
+from utils import LOG
 
 
 def distance_matrix(coords: np.ndarray) -> np.ndarray:

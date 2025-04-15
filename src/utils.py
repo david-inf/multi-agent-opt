@@ -12,15 +12,29 @@ def set_seeds(seed):
     np.random.seed(seed)
 
 
-def get_logger():
+def get_logger(log_file="out.log"):
     import logging
     from rich.logging import RichHandler
+
+    os.makedirs("logs", exist_ok=True)  # logs directory
+    log_file = os.path.join("logs", log_file)  # log path
+
+    # Create handlers
+    rich_handler = RichHandler(rich_tracebacks=True)
+    file_handler = logging.FileHandler(log_file)
+    
+    # Set the same format for both handlers
     FORMAT = "%(message)s"
-    logging.basicConfig(level="INFO", format=FORMAT, datefmt="[%X]",
-                        handlers=[RichHandler()])
+    # formatter = logging.Formatter(FORMAT, datefmt="[%X]")
+    # file_handler.setFormatter(formatter)
+    # rich_handler.setFormatter(formatter)
+
+    # Configure root logger
+    logging.basicConfig(level="INFO", format=FORMAT, datefmt="[%X]", 
+                        handlers=[rich_handler, file_handler])
+    
     log = logging.getLogger("rich")
     return log
-
 
 LOG = get_logger()
 
