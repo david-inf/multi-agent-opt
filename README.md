@@ -2,7 +2,7 @@
 
 Multi-agent optimization for distributed least-squares regression with some real-world complications.
 
-<details open>
+<details>
 <summary>Code organization</summary>
 
 Code inside `src/` folder
@@ -132,13 +132,15 @@ Network | Scenario 1 | Scenario 2
 
 </details>
 
-<details>
+<details open>
 <summary>Logging</summary>
 
-<table>
+Here we see firstly `Synthetic w_i_avg` that is the mean over the actual parameters, then `Local w_i_avg` that is the same mean after the local least-squares problem were solved. The consensus algorithm starts and metrics are printed every `log_avery` iterations, once the consensus has ended, the local bias is updated and the mean over each agent parameters is printed together with regression metrics.
+
+<table style="width:100%">
 <tr>
-<th>Scenario 1</th>
-<th>Scenario 2</th>
+  <th style="width:100px">Scenario 1</th>
+  <th style="width:50%">Scenario 2</th>
 </tr>
 <tr>
 <td>
