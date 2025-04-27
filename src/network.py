@@ -109,7 +109,7 @@ def metropolis_consensus(adjacency, agents) -> np.ndarray:
     return metropolis_mat
 
 
-def plot_network(coords, agents: List[Agent], fname="network.png"):
+def plot_network(coords, agents: List[Agent], fname="network.svg"):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     # plot agent nodes
@@ -155,7 +155,7 @@ def main(opts):
     # LOG.info(adj_mat)
 
     # plot network
-    plot_network(coords, agents, opts.topology + str(opts.n_agents) + ".png")
+    plot_network(coords, agents, opts.topology + str(opts.n_agents) + ".svg")
 
     # laplacian weights
     # lap_weights = laplacian_consensus(adj_mat)

@@ -202,7 +202,7 @@ def consensus_algorithm(opts, agents: List[Agent]):
 
     # log metrics to local directory in json format
     # dump the above lists in a json file
-    plot_metric(errs_list, "Consensus error", opts.experiment_name+".png")
+    plot_metric(errs_list, "Consensus error", opts.experiment_name+".svg")
 
 
 def _make_consensus(opts, agents: List[Agent], l):

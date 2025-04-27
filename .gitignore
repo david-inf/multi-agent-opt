@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 /math
 src/main-centr.py
+src/generate_config.py
+src/commands.sh

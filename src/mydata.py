@@ -13,6 +13,13 @@ def split_data(shared_features, n_samples, n_agents):
     features = np.column_stack((shared_features, np.ones(n_samples)))
     data_splits = np.array_split(features, n_agents)  # list of arrays 2D
 
+    # TODO: rivedere questo
+    mu_i = [0.5, -1.5, 0.2]  # [(p+p_i)]
+    # TODO: forse togliere la varianza sui parametri a comune
+    # e lasciarla sul bias locale
+    sigma_i = 0.1 * np.eye(3)  # [(p+p_i),(p+p_i)]
+    # sigma_i = np.zeros((3,3))  # just as convergence check
+
     w_local = AverageMeter()
     agent_splits = []  # list of dict
     for i in range(n_agents):
@@ -20,10 +27,6 @@ def split_data(shared_features, n_samples, n_agents):
         features_i = data_splits[i]  # [N,(p+p_i)]
 
         # generate weights from gaussian distribution
-        mu_i = [0.5, -1.5, 0.2]  # [(p+p_i)]
-        sigma_i = 0.1 * np.eye(3)  # [(p+p_i),(p+p_i)]
-        # sigma_i = np.zeros((3,3))  # just as test
-
         weights_i = np.random.multivariate_normal(mu_i, sigma_i)  # [(p+p_i)]
         w_local.update(weights_i)
 

@@ -1,0 +1,10 @@
+dataset: dataset2
+dist_thresh: 2.95
+experiment_name: data2_random5
+grid_size: 5
+log_every: 5
+maxiter: 20
+n_agents: 5
+n_samples: 5000
+seed: 42
+topology: random
