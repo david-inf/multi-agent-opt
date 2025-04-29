@@ -1,9 +1,8 @@
-dataset: dataset2
+dataset: balanced
 dist_thresh: 1.35
-experiment_name: data2_random20
+experiment_name: balanced_random20
 grid_size: 5
-log_every: 15
-maxiter: 100
+maxiter: 50
 n_agents: 20
 n_samples: 20000
 seed: 42

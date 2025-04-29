@@ -1,66 +1,98 @@
 """
-We analyze two scenarios, in each we have:
+Each agent has the following parameters:
 - 2 coefficients for global features
 - An agent-specific bias that modifies local targets
+We analyze two scenarios:
+- All agents get the same amount of data
+- All agents get a different amount of data
+We'd like to se the impact on consensus convergence
 """
 
 import numpy as np
 from utils import set_seeds, LOG, AverageMeter
 
 
-def split_data(shared_features, n_samples, n_agents):
-    # split data
-    features = np.column_stack((shared_features, np.ones(n_samples)))
-    data_splits = np.array_split(features, n_agents)  # list of arrays 2D
+def get_features(opts):
+    """Generate random features of size 2 and constant columns for bias"""
+    N = opts.n_samples
 
-    # TODO: rivedere questo
-    mu_i = [0.5, -1.5, 0.2]  # [(p+p_i)]
-    # TODO: forse togliere la varianza sui parametri a comune
-    # e lasciarla sul bias locale
-    sigma_i = 0.1 * np.eye(3)  # [(p+p_i),(p+p_i)]
-    # sigma_i = np.zeros((3,3))  # just as convergence check
+    x1_half1 = np.random.uniform(-10, 10, N//2)
+    x1_half2 = np.random.uniform(-1, 1, N-N//2)
+    x1 = np.hstack((x1_half1, x1_half2))
 
+    x2_half1 = np.random.uniform(-10, 10, int(0.2*N))
+    x2_half2 = np.random.uniform(-1, 1, N-int(0.2*N))
+    x2 = np.hstack((x2_half1, x2_half2))
+
+    # randomize rows so each agents gets both types of features
+    set_seeds(opts.seed)
+    np.random.shuffle(x1)
+    np.random.shuffle(x2)
+
+    # full dataset with constant column for local bias
+    features = np.column_stack((x1, x2, np.ones(N)))
+
+    return features
+
+
+def targets_and_splits(opts, features: np.ndarray):
+    """Given the full dataset, split for each agent"""
+    if opts.dataset == "balanced":
+        # all agents get the same amount of samples
+        data_splits = np.array_split(features, opts.n_agents)  # list of arrays 2D
+    elif opts.dataset == "unbalanced":
+        # all agents get a different amount of samples
+        # 1) generate a random number of samples for each agent
+        splits = np.random.randint(1, opts.n_samples, opts.n_agents-1)
+        splits = np.sort(splits)  # sort to avoid empty splits
+        # 2) split the dataset
+        data_splits = np.split(features, splits)  # list of arrays 2D
+    else:
+        raise ValueError(f"Unknown dataset {opts.dataset}")
+
+    # fixed common parameters and variable local biases
+    w = [0.5, -0.8]  # [p]
+    beta_i = np.random.uniform(-2, 2, opts.n_agents)  # [p_i]
+    # beta_i = np.array([0.8]*n_agents)
+
+    LOG.info(f"Actual parameters:")
     w_local = AverageMeter()
     agent_splits = []  # list of dict
-    for i in range(n_agents):
+    for i in range(opts.n_agents):
         # local split
         features_i = data_splits[i]  # [N,(p+p_i)]
 
-        # generate weights from gaussian distribution
-        weights_i = np.random.multivariate_normal(mu_i, sigma_i)  # [(p+p_i)]
-        w_local.update(weights_i)
+        # local weights (common + local)
+        w_i = np.hstack((w, beta_i[i]))  # [p+p_i]
+        w_local.update(w_i)
 
         with np.printoptions(precision=4):
-            LOG.info(f"Agent {i}, w_i={weights_i}")
+            LOG.info(f"Agent {i}, w_i={w_i}, samples={features_i.shape[0]}")
 
-        # additive noise then local targets
+        # additive noise
         noise = 0.8*np.random.randn(features_i.shape[0])  # [N]
-        targets_i = features_i.dot(weights_i) + noise  # [N]
+        # local targets
+        targets_i = features_i.dot(w_i) + noise  # [N]
 
         # add to agent splits
         agent_data = dict(features=features_i, targets=targets_i)
         agent_splits.append(agent_data)
-
-    with np.printoptions(precision=4):
-        LOG.info(f"Synthetic w_i_avg={w_local.avg}\n")
+    print()
 
     return agent_splits  # list of dict
 
 
 def get_dataset(opts):
+    """
+    Generate data (just the covariates) for each agent with features of two types
+        p=2 (coefficients) and p_i=1 (bias)
+    """
     set_seeds(opts.seed)
-    # p=2 and p_i=1
-    if opts.dataset == "dataset1":  # scenario 1
-        x1 = np.random.uniform(-10, 10, opts.n_samples)
-        x2 = np.random.uniform(-1, 1, opts.n_samples)
-    elif opts.dataset == "dataset2":  # scenario 2
-        x1 = np.random.uniform(-1, 1, opts.n_samples)
-        x2 = np.random.uniform(-10, 10, opts.n_samples)
-    else:
-        raise ValueError(f"Unknown dataset {opts.dataset}")
+    # 1) Generate features
+    features = get_features(opts)
 
-    shared_features = np.column_stack((x1, x2))
-    agent_splits = split_data(shared_features, opts.n_samples, opts.n_agents)
+    # 2) Split dataset and generate targets for each agent
+    agent_splits = targets_and_splits(opts, features)
 
     return agent_splits
 

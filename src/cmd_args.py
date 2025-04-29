@@ -6,7 +6,7 @@ import yaml
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--config", default="configs/exp1.yaml",
+parser.add_argument("--config", default="src/configs/balanced_random5.yaml",
                     help="YAML configuration file")
 
 

@@ -16,12 +16,13 @@ def get_logger(log_file="out.log"):
     import logging
     from rich.logging import RichHandler
 
-    os.makedirs("logs", exist_ok=True)  # logs directory
-    log_file = os.path.join("logs", log_file)  # log path
+    output_dir = "src/logs"
+    os.makedirs(output_dir, exist_ok=True)  # logs directory
+    output_path = os.path.join(output_dir, log_file)  # log path
 
     # Create handlers
     rich_handler = RichHandler(rich_tracebacks=True)
-    file_handler = logging.FileHandler(log_file)
+    file_handler = logging.FileHandler(output_path)
     
     # Set the same format for both handlers
     FORMAT = "%(message)s"
@@ -76,15 +77,35 @@ def rmse(y_true: np.ndarray, y_pred: np.ndarray):
     return np.sqrt(squared_residuals / n_samples)
 
 
-def plot_metric(vals, title, output_dir):
+def plot_metric(vals, output_path):
+    """Use for convergence objective against iterations"""
     fig, ax = plt.subplots()
-    ax.plot(np.arange(1, len(vals) + 1), vals)
+    ax.plot(np.arange(len(vals)), vals)
     # ax.set_yscale("log")
     # ax.set_ylim(bottom=1e-2)
-    ax.set_title(title)
+    ax.set_title("Consensus convergence")
     ax.set_xlabel("iters")
+    ax.set_ylabel("Consensus error")
+    ax.set_yscale("log")
     ax.grid("both")
 
-    path = "plots"
-    os.makedirs(path, exist_ok=True)
-    plt.savefig(os.path.join(path, output_dir))
+    plt.savefig(output_path)
+
+
+def plot_param(vals_mat: np.ndarray, ylab, title, groundtruth, output_path):
+    """Use for parameters convergence"""
+    fig, ax = plt.subplots()
+    iters = vals_mat.shape[0]
+    for i in range(vals_mat.shape[1]):
+        ax.plot(np.arange(iters), vals_mat[:, i], label=f"Agent {i}")
+
+    ax.set_title(title)
+    ax.set_xlabel("iters")
+    ax.set_ylabel(ylab)
+    ax.grid(True, linestyle="--", alpha=0.7)
+    ax.legend()
+    if groundtruth:
+        ax.axhline(y=groundtruth, color="r", linestyle="--", linewidth=2)
+        ax.set_ylim(groundtruth-0.05, groundtruth+0.05)
+
+    plt.savefig(output_path)
