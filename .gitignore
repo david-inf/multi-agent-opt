@@ -161,4 +161,4 @@ cython_debug/
 /math
 src/main_centr.py
 src/generate_config.py
-src/commands.sh
+# src/commands.sh

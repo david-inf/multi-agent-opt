@@ -9,20 +9,23 @@ Multi-agent optimization for distributed least-squares regression with some real
 pip install -r requirements.txt
 ```
 
-- `configs/` folder with yaml configuration files
-- `plots/` folder with plotted results
-- `cmd_args.py` arguments for main programs
-- `main.py` main program with arguments, see `python main.py --help` (for now just the configuration file)
-- `mydata.py` utilities for dataset creation
-- `network.py` utilities for multi-agent network creation, contains `random_nodes()` `connect_agents()` `plot_network()` functions
-- `train.py` utilities for agents training and consensus algorithm, contains `Agent` class and `consensus_algorithm()` function
-- `utils.py` other utilities
+- `src/configs/` folder with yaml configuration files
+- `src/logs/` folder automatically created
+- `src/plots/` folder with plotted results (network, parameter convergence and consensus objective convergence)
+- `src/cmd_args.py` arguments for main programs
+- `src/main.py` main program with arguments, see `python main.py --help` (for now just the configuration file)
+- `src/mydata.py` utilities for dataset creation
+- `src/network.py` utilities for multi-agent network creation, contains `random_nodes()` `connect_agents()` `plot_network()` functions
+- `src/train.py` utilities for agents training and consensus algorithm, contains `Agent` class and `consensus_algorithm()` function
+- `src/utils.py` other utilities
 
 You can run the main program as follows (also works for `network.py` and `mydata.py` for inspecting agents network and data respectively)
 
 ```bash
-python main.py --config configs/exp1.yaml
+python src/main.py --config src/configs/exp1.yaml
 ```
+
+Otherwise go for `chmod -x src/commands.sh` then run `src/commands.sh` for plotting the networks and then running consensus algorithm for each setting
 
 </details>
 
@@ -36,21 +39,17 @@ The idea is to solve the local least-squares problems and then align all the sol
 
 ### :file_folder: Custom dataset
 
-We explore two dataset scenarios
+Here we consider the problem in which all agents share two common parameters and have a local bias. There are two types of covariates mixed together: $x_{1k},x_{2k}\sim\mathcal{U}([-10,10])$ and $x_{1k},x_{2k}\sim\mathcal{U}([-1,1])$, and $\varepsilon_k\sim\mathcal{N}(0,0.8)$. We explore two settings for each agent's samples:
+- Each agent gets the same amount of samples `dataset: balanced`, hence the dataset is split equally
+- Each agent gest a different amount of samples `dataset: unbalanced`, the samples are assigned randomly with `np.random.randint` for random splits
 
-Scenario 1 | Scenario 2
----------- | ----------
-$x_{1k}\sim\mathcal{U}([-10,10])$ | $x_{1k}\sim\mathcal{U}([-1,1])$
-$x_{2k}\sim\mathcal{U}([-1,1])$ | $x_{2k}\sim\mathcal{U}([-10,10])$
-$\varepsilon_k\sim\mathcal{N}(0,0.8)$ | $\varepsilon_k\sim\mathcal{N}(0,0.8)$
-
-In both scenarios we generate the parameters in the same way, we may want to see the effect of changing the covariates data generating process.
+Common parameters are fixed $w=(0.5,-0.8)$ while $\beta_i\sim\mathcal{U}([-2,2])$.
 
 ### :busts_in_silhouette: Multi-agent system
 
 We need to define a network topology and specify the number of agents, based on the topology there could be more parameters to set.
 
-There are various possibilities, here we consider the **ring** (named `random`, see `network.ring_nodes()`) topology where the nodes are displayed in a circle shape, and between two nodes there will be a connection if their distance is less than a threshold.
+There are various possibilities, here we consider the **geometric** (named `random`, see `network.random_nodes()`) topology where the nodes are displayed randomly over the grid, and between two nodes there will be a connection if their distance is less than a given threshold.
 <!-- - Geometric: generate random 2D coordinates the connect two agents if their distance is below a given threshold (see `network.random_nodes()`)
 - Ring: display the nodes in a circle (see `network.ring_nodes`) as the previous the threshold should be provided here too -->
 
@@ -85,7 +84,7 @@ for agent in agents:
     # then RMSE and R2 metrics using sklearn
 ```
 
-Once we have the local solution for all agents (`agent.fit()`), we may proceed with the consensus algorithm for the common part of the weights, starting with
+Once we have the local solution for all agents (`agent.fit()`), we may proceed with the consensus algorithm for the common part of the weights, and then for the local bias
 
 ```python
 for l in range(opts.maxiter):
@@ -98,178 +97,92 @@ for l in range(opts.maxiter):
         # update consensus variables effectively
         agent.sync()
         # updates `q_1i` `omega_1i` `w_i`
-```
-
-Eventually we can update the agent-specific parameters (just bias here) having the common part updated after consensus
-
-```python
-for agent in agents:
-    # updates local bias stored in agent.mu_i_new[-1]
-    agent.local_consensus()
+    for agent in agents:
+        # updates local bias stored in agent.mu_i_new[-1]
+        agent.local_consensus()
 ```
 
 ## :chart_with_downwards_trend: Results
 
-Here we provide results for working examples
+Working examples with results, for 3 considered networks
+
+Network with 5 agents | Network with 12 agents | Network with 20 agents
+-- | -- | --
+<img src="src/plots/balanced_random5/balanced_random5_net.svg" alt="Network with 5 agents"> | <img src="src/plots/balanced_random12/balanced_random12_net.svg" alt="Network with 12 agents"> | <img src="src/plots/balanced_random20/balanced_random20_net.svg" alt="Network with 20 agents">
 
 ### :one: Network with 5 agents
 
-Network | Scenario 1 | Scenario 2
-------- | ---------- | ----------
-![rand12](src/plots/random9.svg) | ![err1](src/plots/data1_random5.svg) | ![err2](src/plots/data2_random5.svg)
+First row `balanced` setting, second row the `unbalanced` setting
+
+err | $\alpha_1$ | $\alpha_2$ | $\beta_i$
+--- | --- | --- | ---
+<img src="src/plots/balanced_random5/balanced_random5_iters.svg"> | <img src="src/plots/balanced_random5/balanced_random5_alpha1.svg"> | <img src="src/plots/balanced_random5/balanced_random5_alpha2.svg"> | <img src="src/plots/balanced_random5/balanced_random5_beta.svg">
+<img src="src/plots/balanced_random5/balanced_random5_iters.svg"> | <img src="src/plots/unbalanced_random5/unbalanced_random5_alpha1.svg"> | <img src="src/plots/unbalanced_random5/unbalanced_random5_alpha2.svg"> | <img src="src/plots/unbalanced_random5/unbalanced_random5_beta.svg">
 
 <details>
 <summary>Logging</summary>
 
-<table style="width:100%">
-<tr>
-  <th style="width:100px">Scenario 1</th>
-  <th style="width:50%">Scenario 2</th>
-</tr>
-<tr>
-<td>
-
-```bash
-python main.py --config configs/data1_random5.yaml
-
-Agent 0, w_i=[ 0.0295 -1.8558  0.323 ]
-Agent 1, w_i=[ 0.5507 -1.634  -0.0421]
-Agent 2, w_i=[ 0.7013 -0.7655  0.5358]
-Agent 3, w_i=[ 0.2796 -1.5236  0.3087]
-Agent 4, w_i=[ 0.4573 -1.7269 -0.149 ]
-Synthetic w_i_avg=[ 0.4037 -1.5012  0.1952]
-
-Agent 0 local solution w_i=[ 0.0329 -1.8158  0.3479], RMSE=0.82, R2=0.64
-Agent 1 local solution w_i=[ 0.549  -1.7424 -0.0462], RMSE=0.76, R2=0.95
-Agent 2 local solution w_i=[ 0.6983 -0.7828  0.5043], RMSE=0.78, R2=0.97
-Agent 3 local solution w_i=[ 0.2796 -1.5284  0.3016], RMSE=0.80, R2=0.83
-Agent 4 local solution w_i=[ 0.4552 -1.7727 -0.14  ], RMSE=0.78, R2=0.93
-Local w_i_avg=[ 0.403  -1.5284  0.1935] RMSE_avg=0.79 R2_avg=0.86
-Iteration [001/20] cons_err=0.094565
-  w_i_avg=[ 0.3864 -1.5349  0.1935] RMSE_avg=1.23 R2_avg=0.57
-Iteration [006/20] cons_err=0.060753
-  w_i_avg=[ 0.3793 -1.5598  0.1935] RMSE_avg=1.47 R2_avg=0.36
-Iteration [011/20] cons_err=0.060214
-  w_i_avg=[ 0.3794 -1.5621  0.1935] RMSE_avg=1.47 R2_avg=0.35
-Iteration [016/20] cons_err=0.060175
-  w_i_avg=[ 0.3796 -1.5622  0.1935] RMSE_avg=1.47 R2_avg=0.34
-Iteration [020/20] cons_err=0.060170
-  w_i_avg=[ 0.3796 -1.5622  0.1935] RMSE_avg=1.47 R2_avg=0.34
-
-Agent 0, w_i=[ 0.3789 -1.5628  0.4161], RMSE=2.18, R2=-1.59
-Agent 1, w_i=[ 0.3781 -1.5634 -0.0198], RMSE=1.26, R2=0.86
-Agent 2, w_i=[ 0.3803 -1.5616  0.4922], RMSE=2.03, R2=0.76
-Agent 3, w_i=[ 0.3801 -1.5618  0.32  ], RMSE=0.99, R2=0.75
-Agent 4, w_i=[ 0.3808 -1.5613 -0.1474], RMSE=0.90, R2=0.90
-w_i_avg=[ 0.3796 -1.5622  0.2122] RMSE_avg=1.47 R2_avg=0.34
-
-```
-
-</td>
-<td>
-
-```bash
-python main.py --config configs/data2_random5.yaml
-
-Agent 0, w_i=[ 0.0295 -1.8558  0.323 ]
-Agent 1, w_i=[ 0.5507 -1.634  -0.0421]
-Agent 2, w_i=[ 0.7013 -0.7655  0.5358]
-Agent 3, w_i=[ 0.2796 -1.5236  0.3087]
-Agent 4, w_i=[ 0.4573 -1.7269 -0.149 ]
-Synthetic w_i_avg=[ 0.4037 -1.5012  0.1952]
-
-Agent 0 local solution w_i=[ 0.0637 -1.8518  0.3479], RMSE=0.82, R2=0.99
-Agent 1 local solution w_i=[ 0.5336 -1.6449 -0.0462], RMSE=0.76, R2=0.99
-Agent 2 local solution w_i=[ 0.6715 -0.7673  0.5043], RMSE=0.78, R2=0.97
-Agent 3 local solution w_i=[ 0.28   -1.5241  0.3016], RMSE=0.80, R2=0.99
-Agent 4 local solution w_i=[ 0.4367 -1.7315 -0.14  ], RMSE=0.78, R2=0.99
-Local w_i_avg=[ 0.3971 -1.5039  0.1935] RMSE_avg=0.79 R2_avg=0.99
-Iteration [001/20] cons_err=0.107554
-  w_i_avg=[ 0.3698 -1.5361  0.1935] RMSE_avg=1.23 R2_avg=0.94
-Iteration [006/20] cons_err=0.061508
-  w_i_avg=[ 0.3554 -1.5652  0.1935] RMSE_avg=1.78 R2_avg=0.80
-Iteration [011/20] cons_err=0.060313
-  w_i_avg=[ 0.3553 -1.5671  0.1935] RMSE_avg=1.86 R2_avg=0.78
-Iteration [016/20] cons_err=0.060191
-  w_i_avg=[ 0.3553 -1.5669  0.1935] RMSE_avg=1.87 R2_avg=0.78
-Iteration [020/20] cons_err=0.060174
-  w_i_avg=[ 0.3552 -1.5668  0.1935] RMSE_avg=1.88 R2_avg=0.77
-
-Agent 0, w_i=[ 0.3555 -1.5685  0.3623], RMSE=1.83, R2=0.97
-Agent 1, w_i=[ 0.3558 -1.5703 -0.0337], RMSE=0.88, R2=0.99
-Agent 2, w_i=[ 0.355  -1.5653  0.2245], RMSE=4.61, R2=-0.06
-Agent 3, w_i=[ 0.3551 -1.5658  0.2917], RMSE=0.84, R2=0.99
-Agent 4, w_i=[ 0.3548 -1.5642 -0.1303], RMSE=1.23, R2=0.98
-w_i_avg=[ 0.3552 -1.5668  0.1429] RMSE_avg=1.88 R2_avg=0.78
-```
-
-</td>
-</tr>
-</table>
-
-</details>
-
-
-### :one: Network with 9 agents
-
-Network | Scenario 1 | Scenario 2
-------- | ---------- | ----------
-![rand12](src/plots/random9.svg) | ![err1](src/plots/data1_random9.svg) | ![err2](src/plots/data2_random9.svg)
-
-<details>
-<summary>Logging</summary>
-
-Here we see firstly `Synthetic w_i_avg` that is the mean over the actual parameters, then `Local w_i_avg` that is the same mean after the local least-squares problem were solved. The consensus algorithm starts and metrics are printed every `log_avery` iterations, once the consensus has ended, the local bias is updated and the mean over each agent parameters is printed together with regression metrics.
+See the configuration files for the [balanced](src/configs/balanced_random5.yaml) and [unbalanced](src/configs/unbalanced_random5.yaml) settings.
 
 <table style="width:100%">
 <tr>
-  <th style="width:100px">Scenario 1</th>
-  <th style="width:50%">Scenario 2</th>
+  <th style="width:100px">Balanced setting</th>
+  <th style="width:100%">Unbalanced setting</th>
 </tr>
 <tr>
 <td>
 
 ```bash
-python main.py --config configs/data1_random9.yaml
+python src/main.py --config src/configs/balanced_random5.yaml
 
-Synthetic w_i_avg=[ 0.3001 -1.424   0.2727]
+Actual parameters:
+Agent 0, w_i=[ 0.5    -0.8    -1.4839], samples=1000
+Agent 1, w_i=[ 0.5    -0.8    -0.2787], samples=1000
+Agent 2, w_i=[ 0.5    -0.8    -0.9012], samples=1000
+Agent 3, w_i=[ 0.5   -0.8    1.551], samples=1000
+Agent 4, w_i=[ 0.5    -0.8    -1.8377], samples=1000
 
-Local w_i_avg=[ 0.3004 -1.4136  0.2763] RMSE_avg=0.80 R2_avg=0.78
-Iteration [001/60] cons_err=0.088167
-  w_i_avg=[ 0.2863 -1.4268  0.2763] RMSE_avg=1.09 R2_avg=0.43
-Iteration [016/60] cons_err=0.063389
-  w_i_avg=[ 0.2641 -1.4071  0.2763] RMSE_avg=1.24 R2_avg=0.41
-Iteration [031/60] cons_err=0.063242
-  w_i_avg=[ 0.2634 -1.4058  0.2763] RMSE_avg=1.25 R2_avg=0.40
-Iteration [046/60] cons_err=0.063241
-  w_i_avg=[ 0.2633 -1.4057  0.2763] RMSE_avg=1.25 R2_avg=0.40
-Iteration [060/60] cons_err=0.063241
-  w_i_avg=[ 0.2633 -1.4056  0.2763] RMSE_avg=1.25 R2_avg=0.40
+Local least-squares:
+Agent 0 local solution w_i=[ 0.5051 -0.8158 -1.5278], RMSE=0.83, R2=0.93
+Agent 1 local solution w_i=[ 0.5056 -0.7946 -0.2842], RMSE=0.83, R2=0.93
+Agent 2 local solution w_i=[ 0.5061 -0.8045 -0.8783], RMSE=0.83, R2=0.93
+Agent 3 local solution w_i=[ 0.4942 -0.804   1.5345], RMSE=0.78, R2=0.94
+Agent 4 local solution w_i=[ 0.5032 -0.8    -1.8503], RMSE=0.80, R2=0.93
 
-w_i_avg=[ 0.2633 -1.4056  0.2744] RMSE_avg=1.25 R2_avg=0.40
+After consensus:
+Agent 0 local solution w_i=[ 0.5021 -0.8036 -1.5279], RMSE=0.83, R2=0.93
+Agent 1 local solution w_i=[ 0.5021 -0.8036 -0.2839], RMSE=0.83, R2=0.93
+Agent 2 local solution w_i=[ 0.5021 -0.8036 -0.8788], RMSE=0.83, R2=0.93
+Agent 3 local solution w_i=[ 0.5021 -0.8036  1.5361], RMSE=0.78, R2=0.94
+Agent 4 local solution w_i=[ 0.5021 -0.8035 -1.85  ], RMSE=0.80, R2=0.93
 ```
 
 </td>
 <td>
 
 ```bash
-python main.py --config configs/data2_random9.yaml
+python src/main.py --config src/configs/unbalanced_random5.yaml
 
-Synthetic w_i_avg=[ 0.3001 -1.424   0.2727]
+Actual parameters:
+Agent 0, w_i=[ 0.5    -0.8    -0.5058], samples=1390
+Agent 1, w_i=[ 0.5    -0.8     0.6799], samples=586
+Agent 2, w_i=[ 0.5    -0.8    -1.7121], samples=1241
+Agent 3, w_i=[ 0.5    -0.8    -0.9733], samples=1299
+Agent 4, w_i=[ 0.5    -0.8     0.8556], samples=484
 
-Local w_i_avg=[ 0.3031 -1.4229  0.2763] RMSE_avg=0.80 R2_avg=0.99
-Iteration [001/60] cons_err=0.090728
-  w_i_avg=[ 0.2773 -1.4134  0.2763] RMSE_avg=1.68 R2_avg=0.94
-Iteration [016/60] cons_err=0.063407
-  w_i_avg=[ 0.2621 -1.3881  0.2763] RMSE_avg=1.99 R2_avg=0.92
-Iteration [031/60] cons_err=0.063242
-  w_i_avg=[ 0.2615 -1.3866  0.2763] RMSE_avg=2.01 R2_avg=0.92
-Iteration [046/60] cons_err=0.063241
-  w_i_avg=[ 0.2615 -1.3865  0.2763] RMSE_avg=2.02 R2_avg=0.92
-Iteration [060/60] cons_err=0.063241
-  w_i_avg=[ 0.2615 -1.3865  0.2763] RMSE_avg=2.02 R2_avg=0.92
+Local least-squares:
+Agent 0 local solution w_i=[ 0.508  -0.7775 -0.4794], RMSE=0.79, R2=0.93
+Agent 1 local solution w_i=[ 0.507  -0.8076  0.6746], RMSE=0.82, R2=0.93
+Agent 2 local solution w_i=[ 0.5045 -0.8033 -1.7414], RMSE=0.80, R2=0.93
+Agent 3 local solution w_i=[ 0.4949 -0.799  -0.9673], RMSE=0.80, R2=0.93
+Agent 4 local solution w_i=[ 0.495  -0.8051  0.827 ], RMSE=0.82, R2=0.92
 
-w_i_avg=[ 0.2615 -1.3865  0.2517] RMSE_avg=2.02 R2_avg=0.92
+After consensus:
+Agent 0 local solution w_i=[ 0.5015 -0.7959 -0.4795], RMSE=0.79, R2=0.93
+Agent 1 local solution w_i=[ 0.5016 -0.7959  0.6785], RMSE=0.82, R2=0.93
+Agent 2 local solution w_i=[ 0.5015 -0.796  -1.7417], RMSE=0.80, R2=0.93
+Agent 3 local solution w_i=[ 0.5015 -0.796  -0.9673], RMSE=0.80, R2=0.93
+Agent 4 local solution w_i=[ 0.5015 -0.796   0.8249], RMSE=0.82, R2=0.92
 ```
 
 </td>
@@ -281,75 +194,117 @@ w_i_avg=[ 0.2615 -1.3865  0.2517] RMSE_avg=2.02 R2_avg=0.92
 
 ### :two: Network with 12 agents
 
-Network | Scenario 1 | Scenario 2
-------- | ---------- | ----------
-![rand12](src/plots/random12.svg) | ![err1](src/plots/data1_random12.svg) | ![err2](src/plots/data2_random12.svg)
+err | $\alpha_1$ | $\alpha_2$ | $\beta_i$
+--- | --- | --- | ---
+<img src="src/plots/balanced_random12/balanced_random12_iters.svg"> | <img src="src/plots/balanced_random12/balanced_random12_alpha1.svg"> | <img src="src/plots/balanced_random12/balanced_random12_alpha2.svg"> | <img src="src/plots/balanced_random12/balanced_random12_beta.svg">
+<img src="src/plots/balanced_random12/balanced_random12_iters.svg"> | <img src="src/plots/unbalanced_random12/unbalanced_random12_alpha1.svg"> | <img src="src/plots/unbalanced_random12/unbalanced_random12_alpha2.svg"> | <img src="src/plots/unbalanced_random12/unbalanced_random12_beta.svg">
 
 <details>
 <summary>Logging</summary>
 
+See the configuration files for the [balanced](src/configs/balanced_random12.yaml) and [unbalanced](src/configs/unbalanced_random12.yaml) settings.
+
 <table>
 <tr>
-<th>Scenario 1</th>
-<th>Scenario 2</th>
+<th>Balanced setting</th>
+<th>Unbalanced setting</th>
 </tr>
 <tr>
 <td>
 
 ```bash
-python main.py --config configs/data1_random12.yaml
+python src/main.py --config src/configs/balanced_random12.yaml
 
-Synthetic w_i_avg=[ 0.3324 -1.4359  0.1882]
+Actual parameters:
+Agent 0, w_i=[ 0.5    -0.8    -0.5256], samples=1000
+Agent 1, w_i=[ 0.5    -0.8     0.7044], samples=1000
+Agent 2, w_i=[ 0.5    -0.8     0.1161], samples=1000
+Agent 3, w_i=[ 0.5    -0.8    -0.4716], samples=1000
+Agent 4, w_i=[ 0.5    -0.8    -0.1973], samples=1000
+Agent 5, w_i=[ 0.5    -0.8    -1.9481], samples=1000
+Agent 6, w_i=[ 0.5    -0.8     1.0821], samples=1000
+Agent 7, w_i=[ 0.5   -0.8   -1.836], samples=1000
+Agent 8, w_i=[ 0.5    -0.8     1.3173], samples=1000
+Agent 9, w_i=[ 0.5   -0.8    0.164], samples=1000
+Agent 10, w_i=[ 0.5    -0.8     0.1113], samples=1000
+Agent 11, w_i=[ 0.5    -0.8     0.8183], samples=1000
 
-Local w_i_avg=[ 0.3305 -1.4288  0.1837] RMSE_avg=0.79 R2_avg=0.84
-Iteration [001/100] cons_err=0.161815
-  w_i_avg=[ 0.3228 -1.4374  0.1837] RMSE_avg=1.47 R2_avg=0.33
-Iteration [016/100] cons_err=0.139929
-  w_i_avg=[ 0.3144 -1.4539  0.1837] RMSE_avg=1.51 R2_avg=0.37
-Iteration [031/100] cons_err=0.133357
-  w_i_avg=[ 0.3067 -1.459   0.1837] RMSE_avg=1.52 R2_avg=0.40
-Iteration [046/100] cons_err=0.130404
-  w_i_avg=[ 0.3016 -1.4629  0.1837] RMSE_avg=1.54 R2_avg=0.40
-Iteration [061/100] cons_err=0.129087
-  w_i_avg=[ 0.2982 -1.4657  0.1837] RMSE_avg=1.56 R2_avg=0.40
-Iteration [076/100] cons_err=0.128503
-  w_i_avg=[ 0.296  -1.4677  0.1837] RMSE_avg=1.57 R2_avg=0.40
-Iteration [091/100] cons_err=0.128245
-  w_i_avg=[ 0.2945 -1.4691  0.1837] RMSE_avg=1.57 R2_avg=0.40
-Iteration [100/100] cons_err=0.128166
-  w_i_avg=[ 0.2939 -1.4697  0.1837] RMSE_avg=1.58 R2_avg=0.40
+Local least-squares:
+Agent 0 local solution w_i=[ 0.4975 -0.8045 -0.4993], RMSE=0.73, R2=0.94
+Agent 1 local solution w_i=[ 0.4901 -0.8028  0.699 ], RMSE=0.78, R2=0.93
+Agent 2 local solution w_i=[ 0.4989 -0.817   0.0918], RMSE=0.78, R2=0.93
+Agent 3 local solution w_i=[ 0.5034 -0.7831 -0.5055], RMSE=0.78, R2=0.94
+Agent 4 local solution w_i=[ 0.4972 -0.7915 -0.1915], RMSE=0.79, R2=0.94
+Agent 5 local solution w_i=[ 0.5041 -0.7811 -1.9141], RMSE=0.76, R2=0.93
+Agent 6 local solution w_i=[ 0.502  -0.8266  1.0841], RMSE=0.77, R2=0.94
+Agent 7 local solution w_i=[ 0.5003 -0.8037 -1.8269], RMSE=0.81, R2=0.93
+Agent 8 local solution w_i=[ 0.4979 -0.7934  1.3539], RMSE=0.80, R2=0.93
+Agent 9 local solution w_i=[ 0.4964 -0.802   0.1639], RMSE=0.80, R2=0.93
+Agent 10 local solution w_i=[ 0.5033 -0.7958  0.1309], RMSE=0.80, R2=0.93
+Agent 11 local solution w_i=[ 0.502  -0.8018  0.81  ], RMSE=0.82, R2=0.93
 
-w_i_avg=[ 0.2939 -1.4697  0.186 ] RMSE_avg=1.58 R2_avg=0.40
+After consensus:
+Agent 0 local solution w_i=[ 0.4997 -0.7997 -0.4993], RMSE=0.73, R2=0.94
+Agent 1 local solution w_i=[ 0.4989 -0.8     0.6984], RMSE=0.78, R2=0.93
+Agent 2 local solution w_i=[ 0.4989 -0.8     0.0939], RMSE=0.78, R2=0.93
+Agent 3 local solution w_i=[ 0.4989 -0.8    -0.5072], RMSE=0.78, R2=0.93
+Agent 4 local solution w_i=[ 0.5003 -0.7994 -0.1915], RMSE=0.79, R2=0.94
+Agent 5 local solution w_i=[ 0.5002 -0.7995 -1.9133], RMSE=0.76, R2=0.93
+Agent 6 local solution w_i=[ 0.5003 -0.7994  1.0861], RMSE=0.77, R2=0.94
+Agent 7 local solution w_i=[ 0.4989 -0.8    -1.8269], RMSE=0.81, R2=0.93
+Agent 8 local solution w_i=[ 0.4991 -0.7999  1.3535], RMSE=0.80, R2=0.93
+Agent 9 local solution w_i=[ 0.4989 -0.8     0.1635], RMSE=0.80, R2=0.93
+Agent 10 local solution w_i=[ 0.5003 -0.7994  0.1311], RMSE=0.80, R2=0.93
+Agent 11 local solution w_i=[ 0.4989 -0.8     0.8102], RMSE=0.82, R2=0.93
 ```
 
 </td>
 <td>
 
 ```bash
-python main.py --config configs/data2_random12.yaml 
+python src/main.py --config src/configs/unbalanced_random12.yaml
 
-Synthetic w_i_avg=[ 0.3324 -1.4359  0.1882]
+Actual parameters:
+Agent 0, w_i=[ 0.5    -0.8     0.1113], samples=134
+Agent 1, w_i=[ 0.5    -0.8     0.8183], samples=505
+Agent 2, w_i=[ 0.5    -0.8     1.4382], samples=590
+Agent 3, w_i=[ 0.5    -0.8     1.7706], samples=968
+Agent 4, w_i=[ 0.5    -0.8     0.1735], samples=1823
+Agent 5, w_i=[ 0.5    -0.8    -1.3974], samples=1374
+Agent 6, w_i=[ 0.5    -0.8     1.5145], samples=1840
+Agent 7, w_i=[ 0.5    -0.8    -1.8373], samples=2249
+Agent 8, w_i=[ 0.5    -0.8     1.2293], samples=413
+Agent 9, w_i=[ 0.5    -0.8     0.7217], samples=523
+Agent 10, w_i=[ 0.5    -0.8     1.6189], samples=1143
+Agent 11, w_i=[ 0.5    -0.8     1.5899], samples=438
 
-Local w_i_avg=[ 0.3132 -1.4352  0.1837] RMSE_avg=0.79 R2_avg=0.99
-Iteration [001/100] cons_err=0.159150
-  w_i_avg=[ 0.3358 -1.4363  0.1837] RMSE_avg=1.79 R2_avg=0.93
-Iteration [016/100] cons_err=0.138427
-  w_i_avg=[ 0.3354 -1.4578  0.1837] RMSE_avg=1.93 R2_avg=0.91
-Iteration [031/100] cons_err=0.132685
-  w_i_avg=[ 0.3307 -1.4651  0.1837] RMSE_avg=1.95 R2_avg=0.91
-Iteration [046/100] cons_err=0.130105
-  w_i_avg=[ 0.3269 -1.4698  0.1837] RMSE_avg=1.97 R2_avg=0.90
-Iteration [061/100] cons_err=0.128955
-  w_i_avg=[ 0.3242 -1.4729  0.1837] RMSE_avg=1.99 R2_avg=0.90
-Iteration [076/100] cons_err=0.128445
-  w_i_avg=[ 0.3223 -1.4749  0.1837] RMSE_avg=2.00 R2_avg=0.90
-Iteration [091/100] cons_err=0.128219
-  w_i_avg=[ 0.321  -1.4763  0.1837] RMSE_avg=2.01 R2_avg=0.90
-Iteration [100/100] cons_err=0.128150
-  w_i_avg=[ 0.3204 -1.4768  0.1837] RMSE_avg=2.01 R2_avg=0.90
+Local least-squares:
+Agent 0 local solution w_i=[ 0.5227 -0.8354  0.0824], RMSE=0.68, R2=0.95
+Agent 1 local solution w_i=[ 0.5038 -0.8217  0.8488], RMSE=0.75, R2=0.94
+Agent 2 local solution w_i=[ 0.5111 -0.8053  1.4807], RMSE=0.74, R2=0.94
+Agent 3 local solution w_i=[ 0.4963 -0.7834  1.7543], RMSE=0.78, R2=0.93
+Agent 4 local solution w_i=[ 0.5041 -0.8019  0.1386], RMSE=0.78, R2=0.93
+Agent 5 local solution w_i=[ 0.4981 -0.8016 -1.3862], RMSE=0.79, R2=0.94
+Agent 6 local solution w_i=[ 0.5093 -0.8047  1.5307], RMSE=0.78, R2=0.94
+Agent 7 local solution w_i=[ 0.501  -0.7958 -1.8176], RMSE=0.80, R2=0.93
+Agent 8 local solution w_i=[ 0.4937 -0.7952  1.2577], RMSE=0.79, R2=0.93
+Agent 9 local solution w_i=[ 0.5063 -0.7994  0.7563], RMSE=0.80, R2=0.93
+Agent 10 local solution w_i=[ 0.495  -0.799   1.6182], RMSE=0.81, R2=0.93
+Agent 11 local solution w_i=[ 0.4981 -0.7991  1.5569], RMSE=0.83, R2=0.92
 
-w_i_avg=[ 0.3204 -1.4768  0.1765] RMSE_avg=2.01 R2_avg=0.90
-
+After consensus:
+Agent 0 local solution w_i=[ 0.5019 -0.8     0.025 ], RMSE=0.69, R2=0.95
+Agent 1 local solution w_i=[ 0.5014 -0.7985  0.8533], RMSE=0.75, R2=0.94
+Agent 2 local solution w_i=[ 0.5014 -0.7985  1.4818], RMSE=0.74, R2=0.94
+Agent 3 local solution w_i=[ 0.5014 -0.7985  1.756 ], RMSE=0.79, R2=0.93
+Agent 4 local solution w_i=[ 0.5022 -0.8009  0.1385], RMSE=0.78, R2=0.93
+Agent 5 local solution w_i=[ 0.5021 -0.8008 -1.3853], RMSE=0.79, R2=0.94
+Agent 6 local solution w_i=[ 0.5022 -0.8009  1.5302], RMSE=0.78, R2=0.94
+Agent 7 local solution w_i=[ 0.5014 -0.7985 -1.8176], RMSE=0.80, R2=0.93
+Agent 8 local solution w_i=[ 0.5016 -0.799   1.257 ], RMSE=0.79, R2=0.93
+Agent 9 local solution w_i=[ 0.5014 -0.7985  0.7558], RMSE=0.80, R2=0.93
+Agent 10 local solution w_i=[ 0.5022 -0.8009  1.616 ], RMSE=0.81, R2=0.93
+Agent 11 local solution w_i=[ 0.5014 -0.7985  1.5591], RMSE=0.83, R2=0.92
 ```
 
 </td>
@@ -361,74 +316,165 @@ w_i_avg=[ 0.3204 -1.4768  0.1765] RMSE_avg=2.01 R2_avg=0.90
 
 ### :three: Network with 20 agents
 
-Network | Scenario 1 | Scenario 2
-------- | ---------- | ----------
-![rand20](src/plots/random20.svg) | ![error1](src/plots/data1_random20.svg) | ![error2](src/plots/data2_random20.svg)
+err | $\alpha_1$ | $\alpha_2$ | $\beta_i$
+--- | --- | --- | ---
+<img src="src/plots/balanced_random20/balanced_random20_iters.svg"> | <img src="src/plots/balanced_random20/balanced_random20_alpha1.svg"> | <img src="src/plots/balanced_random20/balanced_random20_alpha2.svg"> | <img src="src/plots/balanced_random20/balanced_random20_beta.svg">
+<img src="src/plots/balanced_random20/balanced_random20_iters.svg"> | <img src="src/plots/unbalanced_random20/unbalanced_random20_alpha1.svg"> | <img src="src/plots/unbalanced_random20/unbalanced_random20_alpha2.svg"> | <img src="src/plots/unbalanced_random20/unbalanced_random20_beta.svg">
 
 <details>
 <summary>Logging</summary>
 
+See the configuration files for the [balanced](src/configs/balanced_random20.yaml) and [unbalanced](src/configs/unbalanced_random20.yaml) settings.
+
 <table>
 <tr>
-<th>Scenario 1</th>
-<th>Scenario 2</th>
+<th>Balanced setting</th>
+<th>Unbalanced setting</th>
 </tr>
 <tr>
 <td>
 
 ```bash
-python main.py --config configs/data1_random20.yaml
+python src/main.py --config src/configs/balanced_random20.yaml
 
-Synthetic w_i_avg=[ 0.4467 -1.4806  0.2657]
+Actual parameters:
+Agent 0, w_i=[ 0.5    -0.8    -1.8764], samples=1000
+Agent 1, w_i=[ 0.5    -0.8    -0.0773], samples=1000
+Agent 2, w_i=[ 0.5   -0.8    1.182], samples=1000
+Agent 3, w_i=[ 0.5    -0.8     0.5883], samples=1000
+Agent 4, w_i=[ 0.5    -0.8     1.8653], samples=1000
+Agent 5, w_i=[ 0.5    -0.8     1.3731], samples=1000
+Agent 6, w_i=[ 0.5    -0.8     0.1062], samples=1000
+Agent 7, w_i=[ 0.5    -0.8    -1.1739], samples=1000
+Agent 8, w_i=[ 0.5    -0.8    -1.9849], samples=1000
+Agent 9, w_i=[ 0.5   -0.8    1.922], samples=1000
+Agent 10, w_i=[ 0.5    -0.8     1.7533], samples=1000
+Agent 11, w_i=[ 0.5    -0.8    -0.9034], samples=1000
+Agent 12, w_i=[ 0.5    -0.8     0.5529], samples=1000
+Agent 13, w_i=[ 0.5   -0.8    0.917], samples=1000
+Agent 14, w_i=[ 0.5    -0.8     0.3121], samples=1000
+Agent 15, w_i=[ 0.5    -0.8     1.3718], samples=1000
+Agent 16, w_i=[ 0.5    -0.8    -1.6887], samples=1000
+Agent 17, w_i=[ 0.5   -0.8    1.586], samples=1000
+Agent 18, w_i=[ 0.5    -0.8    -0.4319], samples=1000
+Agent 19, w_i=[ 0.5    -0.8    -0.0772], samples=1000
 
-Local w_i_avg=[ 0.4453 -1.486   0.264 ] RMSE_avg=0.80 R2_avg=0.89
-Iteration [001/100] cons_err=0.117290
-  w_i_avg=[ 0.4387 -1.4976  0.264 ] RMSE_avg=1.18 R2_avg=0.61
-Iteration [016/100] cons_err=0.067657
-  w_i_avg=[ 0.4396 -1.4898  0.264 ] RMSE_avg=1.33 R2_avg=0.41
-Iteration [031/100] cons_err=0.064953
-  w_i_avg=[ 0.4396 -1.4891  0.264 ] RMSE_avg=1.36 R2_avg=0.34
-Iteration [046/100] cons_err=0.064436
-  w_i_avg=[ 0.44   -1.4898  0.264 ] RMSE_avg=1.37 R2_avg=0.32
-Iteration [061/100] cons_err=0.064269
-  w_i_avg=[ 0.4405 -1.4908  0.264 ] RMSE_avg=1.38 R2_avg=0.31
-Iteration [076/100] cons_err=0.064186
-  w_i_avg=[ 0.4411 -1.4918  0.264 ] RMSE_avg=1.38 R2_avg=0.30
-Iteration [091/100] cons_err=0.064134
-  w_i_avg=[ 0.4416 -1.4928  0.264 ] RMSE_avg=1.38 R2_avg=0.30
-Iteration [100/100] cons_err=0.064112
-  w_i_avg=[ 0.4419 -1.4933  0.264 ] RMSE_avg=1.38 R2_avg=0.30
+Local least-squares:
+Agent 0 local solution w_i=[ 0.5046 -0.7984 -1.8653], RMSE=0.80, R2=0.93
+Agent 1 local solution w_i=[ 0.5029 -0.801  -0.0571], RMSE=0.79, R2=0.93
+Agent 2 local solution w_i=[ 0.504  -0.8123  1.1633], RMSE=0.81, R2=0.93
+Agent 3 local solution w_i=[ 0.5061 -0.8194  0.5994], RMSE=0.82, R2=0.93
+Agent 4 local solution w_i=[ 0.4945 -0.8003  1.8561], RMSE=0.84, R2=0.93
+Agent 5 local solution w_i=[ 0.4915 -0.8161  1.343 ], RMSE=0.81, R2=0.93
+Agent 6 local solution w_i=[ 0.4966 -0.7962  0.0993], RMSE=0.79, R2=0.93
+Agent 7 local solution w_i=[ 0.498  -0.7999 -1.1855], RMSE=0.80, R2=0.93
+Agent 8 local solution w_i=[ 0.4936 -0.8069 -1.9928], RMSE=0.81, R2=0.93
+Agent 9 local solution w_i=[ 0.5151 -0.8164  1.9148], RMSE=0.77, R2=0.94
+Agent 10 local solution w_i=[ 0.4919 -0.8034  1.7081], RMSE=0.81, R2=0.93
+Agent 11 local solution w_i=[ 0.4912 -0.7945 -0.8693], RMSE=0.80, R2=0.93
+Agent 12 local solution w_i=[ 0.4903 -0.7956  0.593 ], RMSE=0.77, R2=0.94
+Agent 13 local solution w_i=[ 0.5069 -0.8023  0.9172], RMSE=0.82, R2=0.92
+Agent 14 local solution w_i=[ 0.5038 -0.8033  0.3373], RMSE=0.82, R2=0.93
+Agent 15 local solution w_i=[ 0.4988 -0.7956  1.3336], RMSE=0.81, R2=0.92
+Agent 16 local solution w_i=[ 0.4983 -0.7851 -1.6951], RMSE=0.80, R2=0.93
+Agent 17 local solution w_i=[ 0.4919 -0.7704  1.5949], RMSE=0.79, R2=0.92
+Agent 18 local solution w_i=[ 0.5057 -0.8263 -0.4102], RMSE=0.82, R2=0.93
+Agent 19 local solution w_i=[ 0.5048 -0.8042 -0.0513], RMSE=0.81, R2=0.93
 
-w_i_avg=[ 0.4419 -1.4933  0.2558] RMSE_avg=1.38 R2_avg=0.30
+After consensus:
+Agent 0 local solution w_i=[ 0.4995 -0.8025 -1.8651], RMSE=0.80, R2=0.93
+Agent 1 local solution w_i=[ 0.4996 -0.8012 -0.0577], RMSE=0.79, R2=0.93
+Agent 2 local solution w_i=[ 0.4996 -0.8012  1.1603], RMSE=0.81, R2=0.93
+Agent 3 local solution w_i=[ 0.4995 -0.8015  0.5961], RMSE=0.82, R2=0.93
+Agent 4 local solution w_i=[ 0.4994 -0.8028  1.8563], RMSE=0.84, R2=0.93
+Agent 5 local solution w_i=[ 0.4993 -0.8033  1.345 ], RMSE=0.81, R2=0.93
+Agent 6 local solution w_i=[ 0.4995 -0.8029  0.0986], RMSE=0.79, R2=0.93
+Agent 7 local solution w_i=[ 0.4996 -0.8012 -1.1847], RMSE=0.80, R2=0.93
+Agent 8 local solution w_i=[ 0.4995 -0.8021 -1.9912], RMSE=0.81, R2=0.93
+Agent 9 local solution w_i=[ 0.4996 -0.8012  1.9159], RMSE=0.78, R2=0.94
+Agent 10 local solution w_i=[ 0.4994 -0.8032  1.7079], RMSE=0.82, R2=0.93
+Agent 11 local solution w_i=[ 0.4996 -0.8012 -0.8676], RMSE=0.80, R2=0.93
+Agent 12 local solution w_i=[ 0.4996 -0.8012  0.5927], RMSE=0.77, R2=0.94
+Agent 13 local solution w_i=[ 0.4993 -0.8034  0.9176], RMSE=0.82, R2=0.92
+Agent 14 local solution w_i=[ 0.4993 -0.8034  0.3376], RMSE=0.82, R2=0.93
+Agent 15 local solution w_i=[ 0.4993 -0.8033  1.3331], RMSE=0.81, R2=0.92
+Agent 16 local solution w_i=[ 0.4995 -0.8028 -1.6942], RMSE=0.80, R2=0.93
+Agent 17 local solution w_i=[ 0.4996 -0.8011  1.5929], RMSE=0.79, R2=0.92
+Agent 18 local solution w_i=[ 0.4995 -0.8024 -0.4105], RMSE=0.82, R2=0.92
+Agent 19 local solution w_i=[ 0.4995 -0.8027 -0.052 ], RMSE=0.81, R2=0.93
 ```
 
 </td>
 <td>
 
 ```bash
-python main.py --config configs/data2_random20.yaml
+python src/main.py --config src/configs/unbalanced_random20.yaml
 
-Synthetic w_i_avg=[ 0.4467 -1.4806  0.2657]
+Actual parameters:
+Agent 0, w_i=[ 0.5    -0.8    -1.6887], samples=1239
+Agent 1, w_i=[ 0.5   -0.8    1.586], samples=850
+Agent 2, w_i=[ 0.5    -0.8    -0.4319], samples=255
+Agent 3, w_i=[ 0.5    -0.8    -0.0772], samples=3544
+Agent 4, w_i=[ 0.5    -0.8    -0.2211], samples=153
+Agent 5, w_i=[ 0.5    -0.8     0.1251], samples=816
+Agent 6, w_i=[ 0.5    -0.8     0.3927], samples=332
+Agent 7, w_i=[ 0.5    -0.8     0.8414], samples=308
+Agent 8, w_i=[ 0.5    -0.8     0.0998], samples=746
+Agent 9, w_i=[ 0.5    -0.8     0.7391], samples=2378
+Agent 10, w_i=[ 0.5    -0.8    -0.6468], samples=1828
+Agent 11, w_i=[ 0.5    -0.8     1.7467], samples=992
+Agent 12, w_i=[ 0.5    -0.8    -1.7419], samples=44
+Agent 13, w_i=[ 0.5    -0.8     0.1822], samples=937
+Agent 14, w_i=[ 0.5    -0.8    -1.6504], samples=1757
+Agent 15, w_i=[ 0.5    -0.8    -0.2289], samples=1684
+Agent 16, w_i=[ 0.5    -0.8    -0.9697], samples=354
+Agent 17, w_i=[ 0.5    -0.8     1.7476], samples=1161
+Agent 18, w_i=[ 0.5    -0.8    -1.9477], samples=347
+Agent 19, w_i=[ 0.5    -0.8    -0.4352], samples=275
 
-Local w_i_avg=[ 0.4327 -1.4811  0.264 ] RMSE_avg=0.80 R2_avg=0.99
-Iteration [001/100] cons_err=0.122530
-  w_i_avg=[ 0.4324 -1.4931  0.264 ] RMSE_avg=1.20 R2_avg=0.97
-Iteration [016/100] cons_err=0.070489
-  w_i_avg=[ 0.4414 -1.4939  0.264 ] RMSE_avg=1.52 R2_avg=0.95
-Iteration [031/100] cons_err=0.066663
-  w_i_avg=[ 0.4432 -1.4948  0.264 ] RMSE_avg=1.58 R2_avg=0.95
-Iteration [046/100] cons_err=0.065573
-  w_i_avg=[ 0.4447 -1.4971  0.264 ] RMSE_avg=1.60 R2_avg=0.95
-Iteration [061/100] cons_err=0.065053
-  w_i_avg=[ 0.4463 -1.4994  0.264 ] RMSE_avg=1.62 R2_avg=0.95
-Iteration [076/100] cons_err=0.064734
-  w_i_avg=[ 0.4478 -1.5015  0.264 ] RMSE_avg=1.62 R2_avg=0.95
-Iteration [091/100] cons_err=0.064520
-  w_i_avg=[ 0.4491 -1.5034  0.264 ] RMSE_avg=1.63 R2_avg=0.94
-Iteration [100/100] cons_err=0.064424
-  w_i_avg=[ 0.4499 -1.5043  0.264 ] RMSE_avg=1.63 R2_avg=0.94
+Local least-squares:
+Agent 0 local solution w_i=[ 0.4987 -0.7964 -1.6642], RMSE=0.79, R2=0.93
+Agent 1 local solution w_i=[ 0.5016 -0.7856  1.5689], RMSE=0.81, R2=0.93
+Agent 2 local solution w_i=[ 0.5158 -0.7965 -0.457 ], RMSE=0.84, R2=0.93
+Agent 3 local solution w_i=[ 0.4985 -0.8015 -0.0801], RMSE=0.82, R2=0.93
+Agent 4 local solution w_i=[ 0.475  -0.7944 -0.3603], RMSE=0.78, R2=0.93
+Agent 5 local solution w_i=[ 0.4928 -0.7938  0.1156], RMSE=0.79, R2=0.93
+Agent 6 local solution w_i=[ 0.4911 -0.8027  0.3649], RMSE=0.80, R2=0.93
+Agent 7 local solution w_i=[ 0.5023 -0.82    0.848 ], RMSE=0.85, R2=0.92
+Agent 8 local solution w_i=[ 0.5055 -0.8114  0.1151], RMSE=0.79, R2=0.94
+Agent 9 local solution w_i=[ 0.5031 -0.7994  0.7245], RMSE=0.80, R2=0.93
+Agent 10 local solution w_i=[ 0.5003 -0.8021 -0.6299], RMSE=0.79, R2=0.93
+Agent 11 local solution w_i=[ 0.4979 -0.8096  1.7366], RMSE=0.81, R2=0.93
+Agent 12 local solution w_i=[ 0.5422 -0.7173 -1.8661], RMSE=0.75, R2=0.89
+Agent 13 local solution w_i=[ 0.5099 -0.8046  0.2213], RMSE=0.82, R2=0.93
+Agent 14 local solution w_i=[ 0.4985 -0.7951 -1.668 ], RMSE=0.82, R2=0.92
+Agent 15 local solution w_i=[ 0.5021 -0.8051 -0.2092], RMSE=0.78, R2=0.93
+Agent 16 local solution w_i=[ 0.5038 -0.7953 -1.0049], RMSE=0.82, R2=0.92
+Agent 17 local solution w_i=[ 0.4985 -0.8109  1.7588], RMSE=0.83, R2=0.92
+Agent 18 local solution w_i=[ 0.496  -0.8141 -1.9055], RMSE=0.78, R2=0.93
+Agent 19 local solution w_i=[ 0.4933 -0.8207 -0.3997], RMSE=0.84, R2=0.94
 
-w_i_avg=[ 0.4499 -1.5043  0.264 ] RMSE_avg=1.63 R2_avg=0.94
+After consensus:
+Agent 0 local solution w_i=[ 0.5003 -0.8015 -1.664 ], RMSE=0.79, R2=0.93
+Agent 1 local solution w_i=[ 0.501  -0.8019  1.5694], RMSE=0.81, R2=0.93
+Agent 2 local solution w_i=[ 0.501  -0.8019 -0.459 ], RMSE=0.84, R2=0.93
+Agent 3 local solution w_i=[ 0.5009 -0.8018 -0.0801], RMSE=0.82, R2=0.93
+Agent 4 local solution w_i=[ 0.5002 -0.8013 -0.4277], RMSE=0.78, R2=0.93
+Agent 5 local solution w_i=[ 0.5    -0.8011  0.1138], RMSE=0.80, R2=0.93
+Agent 6 local solution w_i=[ 0.5001 -0.8014  0.3655], RMSE=0.80, R2=0.93
+Agent 7 local solution w_i=[ 0.5011 -0.8019  0.8359], RMSE=0.85, R2=0.92
+Agent 8 local solution w_i=[ 0.5005 -0.8016  0.112 ], RMSE=0.80, R2=0.94
+Agent 9 local solution w_i=[ 0.5011 -0.8019  0.7245], RMSE=0.80, R2=0.93
+Agent 10 local solution w_i=[ 0.5001 -0.8012 -0.63  ], RMSE=0.79, R2=0.93
+Agent 11 local solution w_i=[ 0.5011 -0.8019  1.7354], RMSE=0.81, R2=0.93
+Agent 12 local solution w_i=[ 0.501  -0.8019 -2.1335], RMSE=0.83, R2=0.87
+Agent 13 local solution w_i=[ 0.5    -0.8011  0.2209], RMSE=0.82, R2=0.93
+Agent 14 local solution w_i=[ 0.5    -0.8011 -1.6683], RMSE=0.82, R2=0.92
+Agent 15 local solution w_i=[ 0.5    -0.8011 -0.2093], RMSE=0.78, R2=0.93
+Agent 16 local solution w_i=[ 0.5002 -0.8014 -1.0115], RMSE=0.82, R2=0.92
+Agent 17 local solution w_i=[ 0.5011 -0.8019  1.7583], RMSE=0.83, R2=0.92
+Agent 18 local solution w_i=[ 0.5004 -0.8015 -1.9051], RMSE=0.78, R2=0.93
+Agent 19 local solution w_i=[ 0.5002 -0.8014 -0.374 ], RMSE=0.84, R2=0.93
 ```
 </td>
 </tr>
