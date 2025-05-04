@@ -1,9 +1,8 @@
 
-import numpy as np
 from mydata import get_dataset
 from network import random_nodes, ring_nodes, connect_agents
 from train import Agent, consensus_algorithm
-from utils import LOG, set_seeds
+from utils import set_seeds
 
 
 def agents_setup(opts):
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     from cmd_args import parse_args
     from ipdb import launch_ipdb_on_exception
 
-    opts = parse_args()
+    args = parse_args()
 
     with launch_ipdb_on_exception():
-        main(opts)
+        main(args)

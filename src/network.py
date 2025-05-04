@@ -1,10 +1,10 @@
 """Design the multi-agent system"""
 
 import os
-from types import SimpleNamespace
 import numpy as np
 import numpy.linalg as la
 from typing import List
+import matplotlib.pyplot as plt
 
 from train import Agent
 from utils import set_seeds
@@ -99,7 +99,7 @@ def metropolis_consensus(adjacency, agents) -> np.ndarray:
     for i, agent in enumerate(agents):
         # build off-diagonal first
         neighbor_sum = 0
-        for j, neighbor in enumerate(agent.neighbors):
+        for neighbor in agent.neighbors:
             weight_ij = 1 / (1 + max(agent.degree, neighbor.degree))
             metropolis_mat[i, neighbor.agent_id] = weight_ij
             neighbor_sum += weight_ij
@@ -110,7 +110,6 @@ def metropolis_consensus(adjacency, agents) -> np.ndarray:
 
 
 def plot_network(coords, agents: List[Agent], output_path):
-    import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     # plot agent nodes
     ax.scatter(coords[:, 0], coords[:, 1], marker="o", s=50)
@@ -118,7 +117,7 @@ def plot_network(coords, agents: List[Agent], output_path):
     for i, agent in enumerate(agents):
         ax.text(coords[i, 0]+0.15, coords[i, 1]+0.15, str(i),
                 fontsize=12, ha="center", va="center")
-        for j, neighbor in enumerate(agent.neighbors):
+        for neighbor in agent.neighbors:
             ax.plot([coords[i, 0], coords[neighbor.agent_id, 0]], [
                     coords[i, 1], coords[neighbor.agent_id, 1]], "c:")
     # decorate
@@ -177,7 +176,7 @@ if __name__ == "__main__":
     from cmd_args import parse_args
     from ipdb import launch_ipdb_on_exception
 
-    opts = parse_args()
+    args = parse_args()
 
     with launch_ipdb_on_exception():
-        main(opts)
+        main(args)

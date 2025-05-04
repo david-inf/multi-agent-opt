@@ -1,21 +1,19 @@
 
 import os
+import random
 import numpy as np
 import numpy.linalg as la
 import matplotlib.pyplot as plt
+import logging
+from rich.logging import RichHandler
 
 
 def set_seeds(seed):
-    import random
-    import numpy as np
     random.seed(seed)
     np.random.seed(seed)
 
 
 def get_logger(log_file="out.log"):
-    import logging
-    from rich.logging import RichHandler
-
     output_dir = "src/logs"
     os.makedirs(output_dir, exist_ok=True)  # logs directory
     output_path = os.path.join(output_dir, log_file)  # log path

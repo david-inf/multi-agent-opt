@@ -9,6 +9,7 @@ We'd like to se the impact on consensus convergence
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 from utils import set_seeds, LOG, AverageMeter
 
 
@@ -55,7 +56,7 @@ def targets_and_splits(opts, features: np.ndarray):
     beta_i = np.random.uniform(-2, 2, opts.n_agents)  # [p_i]
     # beta_i = np.array([0.8]*n_agents)
 
-    LOG.info(f"Actual parameters:")
+    LOG.info("Actual parameters:")
     w_local = AverageMeter()
     agent_splits = []  # list of dict
     for i in range(opts.n_agents):
@@ -67,7 +68,8 @@ def targets_and_splits(opts, features: np.ndarray):
         w_local.update(w_i)
 
         with np.printoptions(precision=4):
-            LOG.info(f"Agent {i}, w_i={w_i}, samples={features_i.shape[0]}")
+            LOG.info("Agent %d, w_i=%s, samples=%d",
+                     i, w_i, features_i.shape[0])
 
         # additive noise
         noise = 0.8*np.random.randn(features_i.shape[0])  # [N]
@@ -98,8 +100,6 @@ def get_dataset(opts):
 
 
 def main(opts):
-    import matplotlib.pyplot as plt
-
     n_ag = opts.n_agents
     # TODO: better handling of dynamic number of plots
     fig, axs = plt.subplots(n_ag//2, 4, layout="constrained")
@@ -108,7 +108,7 @@ def main(opts):
     agent_splits = get_dataset(opts)
 
     for i, (agent_data, ax) in enumerate(zip(agent_splits, axs.flatten())):
-        LOG.info(f"Agent: {i}")
+        LOG.info("Agent: %d", i)
 
         local_features = agent_data["features"]
         local_targets = agent_data["targets"]
@@ -118,7 +118,7 @@ def main(opts):
         print("")
 
         ax.hist(local_targets, bins=10, density=True)
-        ax.set_title(f"Agent {i}")
+        ax.set_title("Agent: %d", i)
 
     plt.show()
 
@@ -126,6 +126,6 @@ def main(opts):
 if __name__ == "__main__":
     from cmd_args import parse_args
     from ipdb import launch_ipdb_on_exception
-    opts = parse_args()
+    args = parse_args()
     with launch_ipdb_on_exception():
-        main(opts)
+        main(args)

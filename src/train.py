@@ -5,9 +5,8 @@ from typing import List
 import numpy as np
 import numpy.linalg as la
 
-from utils import rmse, r2, plot_metric, plot_param
 from tqdm import tqdm
-from utils import LOG, AverageMeter
+from utils import rmse, r2, plot_metric, plot_param, LOG
 
 
 class Agent:
@@ -37,9 +36,9 @@ class Agent:
         # local solution: 2 (p) common and 1 (p_i) specific w_i = (w, theta_i)
         self.w_i = np.zeros(p+p_i)  # full solution
         # consensus variables for common part
-        self._q_1i, self._omega_1i = [np.zeros(p), np.zeros((p, p))]
+        self.q_1i, self.omega_1i = [np.zeros(p), np.zeros((p, p))]
         # buffer when waiting to sync
-        self._q_1i_next, self._omega_1i_next = self._q_1i.copy(), self._omega_1i.copy()
+        self._q_1i_next, self._omega_1i_next = self.q_1i.copy(), self.omega_1i.copy()
 
         # local parameters distribution, won't be updated
         self.mu_i, self.sigma_i = [np.zeros(p+p_i), np.zeros((p+p_i, p+p_i))]
@@ -80,8 +79,8 @@ class Agent:
         # consensus init
         sigma_11i = self.sigma_i[:self.p, :self.p].copy()
         mu_1i = self.mu_i[:self.p].copy()
-        self._q_1i = la.inv(sigma_11i).dot(mu_1i)  # [p]
-        self._omega_1i = la.inv(sigma_11i)  # [p,p]
+        self.q_1i = la.inv(sigma_11i).dot(mu_1i)  # [p]
+        self.omega_1i = la.inv(sigma_11i)  # [p,p]
 
     def predict(self, features: np.ndarray) -> np.ndarray:
         """Predict targets for given features"""
@@ -94,30 +93,30 @@ class Agent:
         pi_ij = self.metropolis[1:]
 
         # this node
-        self._q_1i_next = pi_ii * self._q_1i  # [p]
-        self._omega_1i_next = pi_ii * self._omega_1i  # [p,p]
+        self._q_1i_next = pi_ii * self.q_1i  # [p]
+        self._omega_1i_next = pi_ii * self.omega_1i  # [p,p]
         # neighbors
         for j, neighbor in enumerate(self.neighbors):
-            self._q_1i_next += pi_ij[j] * neighbor._q_1i
-            self._omega_1i_next += pi_ij[j] * neighbor._omega_1i
+            self._q_1i_next += pi_ij[j] * neighbor.q_1i
+            self._omega_1i_next += pi_ij[j] * neighbor.omega_1i
 
     def sync(self) -> None:
         """Effective consensus step"""
-        self._q_1i = self._q_1i_next.copy()
-        self._omega_1i = self._omega_1i_next.copy()
+        self.q_1i = self._q_1i_next.copy()
+        self.omega_1i = self._omega_1i_next.copy()
         # update common distribution
-        self.mu_i_new[:self.p] = la.inv(self._omega_1i).dot(
-            self._q_1i)  # \mu_{1i}(l)
+        self.mu_i_new[:self.p] = la.inv(self.omega_1i).dot(
+            self.q_1i)  # \mu_{1i}(l)
         self.sigma_i_new[:self.p, :self.p] = la.inv(
-            self._omega_1i)  # P_{1i}(l)
+            self.omega_1i)  # P_{1i}(l)
         # update common parameters with updated mean
         self.w_i[:self.p] = self.mu_i_new[:self.p].copy()
 
     def local_consensus(self) -> None:
         """Update agent-specific parameters, only one step needed"""
-        sigma_11i = self.sigma_i_new[:self.p, :self.p]
-        sigma_21i = self.sigma_i[self.p:, :self.p]
-        sigma_21i_11i_mult = sigma_21i.dot(la.inv(sigma_11i))  # [p_i,p]
+        sigma_11i = la.inv(self.sigma_i_new[:self.p, :self.p])  # [p,p]
+        sigma_21i = self.sigma_i[self.p:, :self.p].copy()  # [p_i,p]
+        sigma_21i_11i_mult = sigma_21i.dot(sigma_11i)  # [p_i,p]
         mu_new_old_sub = self.mu_i_new[:self.p] - self.mu_i[:self.p]  # [p]
 
         mu_2i_next = self.mu_i[self.p:] + \
@@ -155,7 +154,7 @@ def consensus_algorithm(opts, agents: List[Agent]):
     errs_iters = [err0]  # list of floats
     params_agents_iters = [params0]
     with tqdm(range(opts.maxiter), desc="Consensus", unit="it") as titers:
-        for l in titers:
+        for _ in titers:
             # single consensus step on common and local parameters
             cons_err, params_agents = _make_consensus(agents)
 
@@ -165,7 +164,7 @@ def consensus_algorithm(opts, agents: List[Agent]):
             titers.set_postfix(cons_err=cons_err)
             titers.update()
 
-    LOG.info(f"After consensus:")
+    LOG.info("After consensus:")
     for agent in agents:
         # check fit after consensus
         _training_metrics(agent)
@@ -218,10 +217,8 @@ def _training_metrics(agent: Agent):
     r2_score = r2(agent.targets, pred)
 
     with np.printoptions(precision=4):
-        LOG.info(f"Agent {agent.agent_id} "
-                 f"local solution w_i={agent.w_i},"
-                 f" RMSE={rmse_score:.2f}, "
-                 f"R2={r2_score:.2f}")
+        LOG.info("Agent %d local solution w_i=%s, RMSE=%.2f, R2=%.2f",
+                 agent.agent_id, agent.w_i, rmse_score, r2_score)
 
 
 def _consensus_error(agents: List[Agent]):
