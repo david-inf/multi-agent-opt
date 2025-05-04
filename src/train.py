@@ -6,7 +6,7 @@ import numpy as np
 import numpy.linalg as la
 
 from tqdm import tqdm
-from utils import rmse, r2, plot_metric, plot_param, LOG
+from utils import rmse, r2, plot_metric, LOG, plot_alpha, plot_beta
 
 
 class Agent:
@@ -139,7 +139,7 @@ class Agent:
             return msg
 
 
-def consensus_algorithm(opts, agents: List[Agent]):
+def consensus_algorithm(opts, agents: List[Agent], gt):
     """Run consensus algorithm"""
     LOG.info("Local least-squares:")
     params0 = []
@@ -152,7 +152,7 @@ def consensus_algorithm(opts, agents: List[Agent]):
     err0 = _consensus_error(agents)
 
     errs_iters = [err0]  # list of floats
-    params_agents_iters = [params0]
+    params_agents_iters = [params0]  # [L, N, 3]
     with tqdm(range(opts.maxiter), desc="Consensus", unit="it") as titers:
         for _ in titers:
             # single consensus step on common and local parameters
@@ -178,14 +178,16 @@ def consensus_algorithm(opts, agents: List[Agent]):
     # 2) Plot parameters convergence
     vals_tensor = np.array(params_agents_iters)  # [iters, n_agents, params]
     labels = [r"$\alpha_1$", r"$\alpha_2$", r"$\beta_i$"]
-    fnames = ["alpha1", "alpha2", "beta"]
-    gt = [0.5, -0.8, None]
-    for j in range(vals_tensor.shape[2]):
-        # plot for param j againts iterations per each agent
-        output_path = os.path.join(
-            output_dir, f"{opts.experiment_name}_{fnames[j]}.svg")
-        plot_param(vals_tensor[:, :, j], labels[j],
-                   "Coefficient convergence", gt[j], output_path)
+    fnames = [f"{opts.experiment_name}_{coeff}.svg" for coeff in [
+        "alpha1", "alpha2", "beta"]]
+    paths = [os.path.join(output_dir, fname) for fname in fnames]
+
+    plot_alpha(vals_tensor[:, :, 0], labels[0],
+               "Coefficient convergence", gt[0], paths[0])
+    plot_alpha(vals_tensor[:, :, 1], labels[1],
+               "Coefficient convergence", gt[1], paths[1])
+    plot_beta(vals_tensor[:, :, 2], labels[2], "Coefficient convergence",
+              gt[2], paths[2])
 
 
 def _make_consensus(agents: List[Agent]):

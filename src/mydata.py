@@ -55,6 +55,7 @@ def targets_and_splits(opts, features: np.ndarray):
     w = [0.5, -0.8]  # [p]
     beta_i = np.random.uniform(-2, 2, opts.n_agents)  # [p_i]
     # beta_i = np.array([0.8]*n_agents)
+    gt = w.copy() + [beta_i]  # ground-truth
 
     LOG.info("Actual parameters:")
     w_local = AverageMeter()
@@ -68,8 +69,9 @@ def targets_and_splits(opts, features: np.ndarray):
         w_local.update(w_i)
 
         with np.printoptions(precision=4):
-            LOG.info("Agent %d, w_i=%s, samples=%d",
-                     i, w_i, features_i.shape[0])
+            fraction = features_i.shape[0] / features.shape[0]
+            LOG.info("Agent %d, w_i=%s, samples=%d (%.1f%%)",
+                     i, w_i, features_i.shape[0], 100.*fraction)
 
         # additive noise
         noise = 0.8*np.random.randn(features_i.shape[0])  # [N]
@@ -77,11 +79,11 @@ def targets_and_splits(opts, features: np.ndarray):
         targets_i = features_i.dot(w_i) + noise  # [N]
 
         # add to agent splits
-        agent_data = dict(features=features_i, targets=targets_i)
+        agent_data = {"features": features_i, "targets": targets_i}
         agent_splits.append(agent_data)
     print()
 
-    return agent_splits  # list of dict
+    return agent_splits, gt  # list of dict
 
 
 def get_dataset(opts):
@@ -94,9 +96,9 @@ def get_dataset(opts):
     features = get_features(opts)
 
     # 2) Split dataset and generate targets for each agent
-    agent_splits = targets_and_splits(opts, features)
+    agent_splits, gt = targets_and_splits(opts, features)
 
-    return agent_splits
+    return agent_splits, gt
 
 
 def main(opts):
@@ -125,7 +127,9 @@ def main(opts):
 
 if __name__ == "__main__":
     from cmd_args import parse_args
-    from ipdb import launch_ipdb_on_exception
+    from ipdb import post_mortem
     args = parse_args()
-    with launch_ipdb_on_exception():
+    try:
         main(args)
+    except Exception:
+        post_mortem()

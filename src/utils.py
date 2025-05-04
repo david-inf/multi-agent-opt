@@ -42,9 +42,15 @@ class AverageMeter:
     """Computes and stores the average and current value"""
 
     def __init__(self):
-        self.reset()
+        """Initialize the AverageMeter with default values."""
+        # store metric statistics
+        self.val = 0  # value
+        self.sum = 0  # running sum
+        self.avg = 0  # running average
+        self.count = 0  # steps counter
 
     def reset(self):
+        """Reset all statistics to zero."""
         # store metric statistics
         self.val = 0  # value
         self.sum = 0  # running sum
@@ -52,6 +58,12 @@ class AverageMeter:
         self.count = 0  # steps counter
 
     def update(self, val, n=1):
+        """Update statistics with new value.
+        
+        Args:
+            val: The value to update with
+            n: Weight of the value (default: 1)
+        """
         # update statistic with given new value
         self.val = val
         self.sum += val * n
@@ -60,6 +72,7 @@ class AverageMeter:
 
 
 def r2(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """R^2 goodness of fit"""
     assert y_true.size == y_pred.size
     squared_residuals = la.norm(y_true - y_pred) ** 2
     sum_of_y_mean = la.norm(y_true - np.mean(y_true)) ** 2
@@ -69,6 +82,7 @@ def r2(y_true: np.ndarray, y_pred: np.ndarray) -> float:
 
 
 def rmse(y_true: np.ndarray, y_pred: np.ndarray):
+    """RMSE - root mean squared error"""
     assert y_true.size == y_pred.size
     n_samples = y_true.size
     squared_residuals = la.norm(y_true - y_pred) ** 2
@@ -77,7 +91,7 @@ def rmse(y_true: np.ndarray, y_pred: np.ndarray):
 
 def plot_metric(vals, output_path):
     """Use for convergence objective against iterations"""
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     ax.plot(np.arange(len(vals)), vals)
     # ax.set_yscale("log")
     # ax.set_ylim(bottom=1e-2)
@@ -90,9 +104,9 @@ def plot_metric(vals, output_path):
     plt.savefig(output_path)
 
 
-def plot_param(vals_mat: np.ndarray, ylab, title, groundtruth, output_path):
+def plot_alpha(vals_mat: np.ndarray, ylab, title, groundtruth: float, output_path):
     """Use for parameters convergence"""
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     iters = vals_mat.shape[0]
     for i in range(vals_mat.shape[1]):
         ax.plot(np.arange(iters), vals_mat[:, i], label=f"Agent {i}")
@@ -105,5 +119,23 @@ def plot_param(vals_mat: np.ndarray, ylab, title, groundtruth, output_path):
     if groundtruth:
         ax.axhline(y=groundtruth, color="r", linestyle="--", linewidth=2)
         ax.set_ylim(groundtruth-0.05, groundtruth+0.05)
+
+    plt.savefig(output_path)
+
+
+def plot_beta(vals_mat: np.ndarray, ylab, title, groundtruth: np.ndarray, output_path):
+    """Use for parameters convergence"""
+    _, ax = plt.subplots()
+    iters = vals_mat.shape[0]
+    for i in range(vals_mat.shape[1]):
+        ax.plot(np.arange(iters), vals_mat[:, i], label=f"Agent {i}")
+
+    ax.set_title(title)
+    ax.set_xlabel("iters")
+    ax.set_ylabel(ylab)
+    ax.grid(True, linestyle="--", alpha=0.7)
+    ax.legend()
+    for gt in groundtruth:
+        ax.axhline(y=gt, color="k", linestyle="--", linewidth=1)
 
     plt.savefig(output_path)

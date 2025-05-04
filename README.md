@@ -25,7 +25,7 @@ You can run the main program as follows (also works for `network.py` and `mydata
 python src/main.py --config src/configs/exp1.yaml
 ```
 
-Otherwise go for `chmod -x src/commands.sh` then run `src/commands.sh` for plotting the networks and then running consensus algorithm for each setting
+Otherwise go for `chmod +x src/commands.sh` then run `src/commands.sh` for plotting the networks and then running consensus algorithm for each setting
 
 </details>
 
@@ -136,19 +136,17 @@ See the configuration files for the [balanced](src/configs/balanced_random5.yaml
 python src/main.py --config src/configs/balanced_random5.yaml
 
 Actual parameters:
-Agent 0, w_i=[ 0.5    -0.8    -1.4839], samples=1000
-Agent 1, w_i=[ 0.5    -0.8    -0.2787], samples=1000
-Agent 2, w_i=[ 0.5    -0.8    -0.9012], samples=1000
-Agent 3, w_i=[ 0.5   -0.8    1.551], samples=1000
-Agent 4, w_i=[ 0.5    -0.8    -1.8377], samples=1000
-
+Agent 0, w_i=[ 0.5    -0.8    -1.4839], samples=1000 (20.0%)
+Agent 1, w_i=[ 0.5    -0.8    -0.2787], samples=1000 (20.0%)
+Agent 2, w_i=[ 0.5    -0.8    -0.9012], samples=1000 (20.0%)
+Agent 3, w_i=[ 0.5   -0.8    1.551], samples=1000 (20.0%)
+Agent 4, w_i=[ 0.5    -0.8    -1.8377], samples=1000 (20.0%)
 Local least-squares:
 Agent 0 local solution w_i=[ 0.5051 -0.8158 -1.5278], RMSE=0.83, R2=0.93
 Agent 1 local solution w_i=[ 0.5056 -0.7946 -0.2842], RMSE=0.83, R2=0.93
 Agent 2 local solution w_i=[ 0.5061 -0.8045 -0.8783], RMSE=0.83, R2=0.93
 Agent 3 local solution w_i=[ 0.4942 -0.804   1.5345], RMSE=0.78, R2=0.94
 Agent 4 local solution w_i=[ 0.5032 -0.8    -1.8503], RMSE=0.80, R2=0.93
-
 After consensus:
 Agent 0 local solution w_i=[ 0.5021 -0.8036 -1.5279], RMSE=0.83, R2=0.93
 Agent 1 local solution w_i=[ 0.5021 -0.8036 -0.2839], RMSE=0.83, R2=0.93
@@ -164,19 +162,17 @@ Agent 4 local solution w_i=[ 0.5021 -0.8035 -1.85  ], RMSE=0.80, R2=0.93
 python src/main.py --config src/configs/unbalanced_random5.yaml
 
 Actual parameters:
-Agent 0, w_i=[ 0.5    -0.8    -0.5058], samples=1390
-Agent 1, w_i=[ 0.5    -0.8     0.6799], samples=586
-Agent 2, w_i=[ 0.5    -0.8    -1.7121], samples=1241
-Agent 3, w_i=[ 0.5    -0.8    -0.9733], samples=1299
-Agent 4, w_i=[ 0.5    -0.8     0.8556], samples=484
-
+Agent 0, w_i=[ 0.5    -0.8    -0.5058], samples=1390 (27.8%)
+Agent 1, w_i=[ 0.5    -0.8     0.6799], samples=586 (11.7%)
+Agent 2, w_i=[ 0.5    -0.8    -1.7121], samples=1241 (24.8%)
+Agent 3, w_i=[ 0.5    -0.8    -0.9733], samples=1299 (26.0%)
+Agent 4, w_i=[ 0.5    -0.8     0.8556], samples=484 (9.7%)
 Local least-squares:
 Agent 0 local solution w_i=[ 0.508  -0.7775 -0.4794], RMSE=0.79, R2=0.93
 Agent 1 local solution w_i=[ 0.507  -0.8076  0.6746], RMSE=0.82, R2=0.93
 Agent 2 local solution w_i=[ 0.5045 -0.8033 -1.7414], RMSE=0.80, R2=0.93
 Agent 3 local solution w_i=[ 0.4949 -0.799  -0.9673], RMSE=0.80, R2=0.93
 Agent 4 local solution w_i=[ 0.495  -0.8051  0.827 ], RMSE=0.82, R2=0.92
-
 After consensus:
 Agent 0 local solution w_i=[ 0.5015 -0.7959 -0.4795], RMSE=0.79, R2=0.93
 Agent 1 local solution w_i=[ 0.5016 -0.7959  0.6785], RMSE=0.82, R2=0.93
@@ -216,19 +212,18 @@ See the configuration files for the [balanced](src/configs/balanced_random12.yam
 python src/main.py --config src/configs/balanced_random12.yaml
 
 Actual parameters:
-Agent 0, w_i=[ 0.5    -0.8    -0.5256], samples=1000
-Agent 1, w_i=[ 0.5    -0.8     0.7044], samples=1000
-Agent 2, w_i=[ 0.5    -0.8     0.1161], samples=1000
-Agent 3, w_i=[ 0.5    -0.8    -0.4716], samples=1000
-Agent 4, w_i=[ 0.5    -0.8    -0.1973], samples=1000
-Agent 5, w_i=[ 0.5    -0.8    -1.9481], samples=1000
-Agent 6, w_i=[ 0.5    -0.8     1.0821], samples=1000
-Agent 7, w_i=[ 0.5   -0.8   -1.836], samples=1000
-Agent 8, w_i=[ 0.5    -0.8     1.3173], samples=1000
-Agent 9, w_i=[ 0.5   -0.8    0.164], samples=1000
-Agent 10, w_i=[ 0.5    -0.8     0.1113], samples=1000
-Agent 11, w_i=[ 0.5    -0.8     0.8183], samples=1000
-
+Agent 0, w_i=[ 0.5    -0.8    -0.5256], samples=1000 (8.3%)
+Agent 1, w_i=[ 0.5    -0.8     0.7044], samples=1000 (8.3%)
+Agent 2, w_i=[ 0.5    -0.8     0.1161], samples=1000 (8.3%)
+Agent 3, w_i=[ 0.5    -0.8    -0.4716], samples=1000 (8.3%)
+Agent 4, w_i=[ 0.5    -0.8    -0.1973], samples=1000 (8.3%)
+Agent 5, w_i=[ 0.5    -0.8    -1.9481], samples=1000 (8.3%)
+Agent 6, w_i=[ 0.5    -0.8     1.0821], samples=1000 (8.3%)
+Agent 7, w_i=[ 0.5   -0.8   -1.836], samples=1000 (8.3%)
+Agent 8, w_i=[ 0.5    -0.8     1.3173], samples=1000 (8.3%)
+Agent 9, w_i=[ 0.5   -0.8    0.164], samples=1000 (8.3%)
+Agent 10, w_i=[ 0.5    -0.8     0.1113], samples=1000 (8.3%)
+Agent 11, w_i=[ 0.5    -0.8     0.8183], samples=1000 (8.3%)
 Local least-squares:
 Agent 0 local solution w_i=[ 0.4975 -0.8045 -0.4993], RMSE=0.73, R2=0.94
 Agent 1 local solution w_i=[ 0.4901 -0.8028  0.699 ], RMSE=0.78, R2=0.93
@@ -242,7 +237,6 @@ Agent 8 local solution w_i=[ 0.4979 -0.7934  1.3539], RMSE=0.80, R2=0.93
 Agent 9 local solution w_i=[ 0.4964 -0.802   0.1639], RMSE=0.80, R2=0.93
 Agent 10 local solution w_i=[ 0.5033 -0.7958  0.1309], RMSE=0.80, R2=0.93
 Agent 11 local solution w_i=[ 0.502  -0.8018  0.81  ], RMSE=0.82, R2=0.93
-
 After consensus:
 Agent 0 local solution w_i=[ 0.4997 -0.7997 -0.4993], RMSE=0.73, R2=0.94
 Agent 1 local solution w_i=[ 0.4989 -0.8     0.6984], RMSE=0.78, R2=0.93
@@ -265,19 +259,18 @@ Agent 11 local solution w_i=[ 0.4989 -0.8     0.8102], RMSE=0.82, R2=0.93
 python src/main.py --config src/configs/unbalanced_random12.yaml
 
 Actual parameters:
-Agent 0, w_i=[ 0.5    -0.8     0.1113], samples=134
-Agent 1, w_i=[ 0.5    -0.8     0.8183], samples=505
-Agent 2, w_i=[ 0.5    -0.8     1.4382], samples=590
-Agent 3, w_i=[ 0.5    -0.8     1.7706], samples=968
-Agent 4, w_i=[ 0.5    -0.8     0.1735], samples=1823
-Agent 5, w_i=[ 0.5    -0.8    -1.3974], samples=1374
-Agent 6, w_i=[ 0.5    -0.8     1.5145], samples=1840
-Agent 7, w_i=[ 0.5    -0.8    -1.8373], samples=2249
-Agent 8, w_i=[ 0.5    -0.8     1.2293], samples=413
-Agent 9, w_i=[ 0.5    -0.8     0.7217], samples=523
-Agent 10, w_i=[ 0.5    -0.8     1.6189], samples=1143
-Agent 11, w_i=[ 0.5    -0.8     1.5899], samples=438
-
+Agent 0, w_i=[ 0.5    -0.8     0.1113], samples=134 (1.1%)
+Agent 1, w_i=[ 0.5    -0.8     0.8183], samples=505 (4.2%)
+Agent 2, w_i=[ 0.5    -0.8     1.4382], samples=590 (4.9%)
+Agent 3, w_i=[ 0.5    -0.8     1.7706], samples=968 (8.1%)
+Agent 4, w_i=[ 0.5    -0.8     0.1735], samples=1823 (15.2%)
+Agent 5, w_i=[ 0.5    -0.8    -1.3974], samples=1374 (11.5%)
+Agent 6, w_i=[ 0.5    -0.8     1.5145], samples=1840 (15.3%)
+Agent 7, w_i=[ 0.5    -0.8    -1.8373], samples=2249 (18.7%)
+Agent 8, w_i=[ 0.5    -0.8     1.2293], samples=413 (3.4%)
+Agent 9, w_i=[ 0.5    -0.8     0.7217], samples=523 (4.4%)
+Agent 10, w_i=[ 0.5    -0.8     1.6189], samples=1143 (9.5%)
+Agent 11, w_i=[ 0.5    -0.8     1.5899], samples=438 (3.6%)
 Local least-squares:
 Agent 0 local solution w_i=[ 0.5227 -0.8354  0.0824], RMSE=0.68, R2=0.95
 Agent 1 local solution w_i=[ 0.5038 -0.8217  0.8488], RMSE=0.75, R2=0.94
@@ -291,7 +284,6 @@ Agent 8 local solution w_i=[ 0.4937 -0.7952  1.2577], RMSE=0.79, R2=0.93
 Agent 9 local solution w_i=[ 0.5063 -0.7994  0.7563], RMSE=0.80, R2=0.93
 Agent 10 local solution w_i=[ 0.495  -0.799   1.6182], RMSE=0.81, R2=0.93
 Agent 11 local solution w_i=[ 0.4981 -0.7991  1.5569], RMSE=0.83, R2=0.92
-
 After consensus:
 Agent 0 local solution w_i=[ 0.5019 -0.8     0.025 ], RMSE=0.69, R2=0.95
 Agent 1 local solution w_i=[ 0.5014 -0.7985  0.8533], RMSE=0.75, R2=0.94
@@ -338,27 +330,26 @@ See the configuration files for the [balanced](src/configs/balanced_random20.yam
 python src/main.py --config src/configs/balanced_random20.yaml
 
 Actual parameters:
-Agent 0, w_i=[ 0.5    -0.8    -1.8764], samples=1000
-Agent 1, w_i=[ 0.5    -0.8    -0.0773], samples=1000
-Agent 2, w_i=[ 0.5   -0.8    1.182], samples=1000
-Agent 3, w_i=[ 0.5    -0.8     0.5883], samples=1000
-Agent 4, w_i=[ 0.5    -0.8     1.8653], samples=1000
-Agent 5, w_i=[ 0.5    -0.8     1.3731], samples=1000
-Agent 6, w_i=[ 0.5    -0.8     0.1062], samples=1000
-Agent 7, w_i=[ 0.5    -0.8    -1.1739], samples=1000
-Agent 8, w_i=[ 0.5    -0.8    -1.9849], samples=1000
-Agent 9, w_i=[ 0.5   -0.8    1.922], samples=1000
-Agent 10, w_i=[ 0.5    -0.8     1.7533], samples=1000
-Agent 11, w_i=[ 0.5    -0.8    -0.9034], samples=1000
-Agent 12, w_i=[ 0.5    -0.8     0.5529], samples=1000
-Agent 13, w_i=[ 0.5   -0.8    0.917], samples=1000
-Agent 14, w_i=[ 0.5    -0.8     0.3121], samples=1000
-Agent 15, w_i=[ 0.5    -0.8     1.3718], samples=1000
-Agent 16, w_i=[ 0.5    -0.8    -1.6887], samples=1000
-Agent 17, w_i=[ 0.5   -0.8    1.586], samples=1000
-Agent 18, w_i=[ 0.5    -0.8    -0.4319], samples=1000
-Agent 19, w_i=[ 0.5    -0.8    -0.0772], samples=1000
-
+Agent 0, w_i=[ 0.5    -0.8    -1.8764], samples=1000 (5.0%)
+Agent 1, w_i=[ 0.5    -0.8    -0.0773], samples=1000 (5.0%)
+Agent 2, w_i=[ 0.5   -0.8    1.182], samples=1000 (5.0%)
+Agent 3, w_i=[ 0.5    -0.8     0.5883], samples=1000 (5.0%)
+Agent 4, w_i=[ 0.5    -0.8     1.8653], samples=1000 (5.0%)
+Agent 5, w_i=[ 0.5    -0.8     1.3731], samples=1000 (5.0%)
+Agent 6, w_i=[ 0.5    -0.8     0.1062], samples=1000 (5.0%)
+Agent 7, w_i=[ 0.5    -0.8    -1.1739], samples=1000 (5.0%)
+Agent 8, w_i=[ 0.5    -0.8    -1.9849], samples=1000 (5.0%)
+Agent 9, w_i=[ 0.5   -0.8    1.922], samples=1000 (5.0%)
+Agent 10, w_i=[ 0.5    -0.8     1.7533], samples=1000 (5.0%)
+Agent 11, w_i=[ 0.5    -0.8    -0.9034], samples=1000 (5.0%)
+Agent 12, w_i=[ 0.5    -0.8     0.5529], samples=1000 (5.0%)
+Agent 13, w_i=[ 0.5   -0.8    0.917], samples=1000 (5.0%)
+Agent 14, w_i=[ 0.5    -0.8     0.3121], samples=1000 (5.0%)
+Agent 15, w_i=[ 0.5    -0.8     1.3718], samples=1000 (5.0%)
+Agent 16, w_i=[ 0.5    -0.8    -1.6887], samples=1000 (5.0%)
+Agent 17, w_i=[ 0.5   -0.8    1.586], samples=1000 (5.0%)
+Agent 18, w_i=[ 0.5    -0.8    -0.4319], samples=1000 (5.0%)
+Agent 19, w_i=[ 0.5    -0.8    -0.0772], samples=1000 (5.0%)
 Local least-squares:
 Agent 0 local solution w_i=[ 0.5046 -0.7984 -1.8653], RMSE=0.80, R2=0.93
 Agent 1 local solution w_i=[ 0.5029 -0.801  -0.0571], RMSE=0.79, R2=0.93
@@ -380,7 +371,6 @@ Agent 16 local solution w_i=[ 0.4983 -0.7851 -1.6951], RMSE=0.80, R2=0.93
 Agent 17 local solution w_i=[ 0.4919 -0.7704  1.5949], RMSE=0.79, R2=0.92
 Agent 18 local solution w_i=[ 0.5057 -0.8263 -0.4102], RMSE=0.82, R2=0.93
 Agent 19 local solution w_i=[ 0.5048 -0.8042 -0.0513], RMSE=0.81, R2=0.93
-
 After consensus:
 Agent 0 local solution w_i=[ 0.4995 -0.8025 -1.8651], RMSE=0.80, R2=0.93
 Agent 1 local solution w_i=[ 0.4996 -0.8012 -0.0577], RMSE=0.79, R2=0.93
@@ -411,27 +401,26 @@ Agent 19 local solution w_i=[ 0.4995 -0.8027 -0.052 ], RMSE=0.81, R2=0.93
 python src/main.py --config src/configs/unbalanced_random20.yaml
 
 Actual parameters:
-Agent 0, w_i=[ 0.5    -0.8    -1.6887], samples=1239
-Agent 1, w_i=[ 0.5   -0.8    1.586], samples=850
-Agent 2, w_i=[ 0.5    -0.8    -0.4319], samples=255
-Agent 3, w_i=[ 0.5    -0.8    -0.0772], samples=3544
-Agent 4, w_i=[ 0.5    -0.8    -0.2211], samples=153
-Agent 5, w_i=[ 0.5    -0.8     0.1251], samples=816
-Agent 6, w_i=[ 0.5    -0.8     0.3927], samples=332
-Agent 7, w_i=[ 0.5    -0.8     0.8414], samples=308
-Agent 8, w_i=[ 0.5    -0.8     0.0998], samples=746
-Agent 9, w_i=[ 0.5    -0.8     0.7391], samples=2378
-Agent 10, w_i=[ 0.5    -0.8    -0.6468], samples=1828
-Agent 11, w_i=[ 0.5    -0.8     1.7467], samples=992
-Agent 12, w_i=[ 0.5    -0.8    -1.7419], samples=44
-Agent 13, w_i=[ 0.5    -0.8     0.1822], samples=937
-Agent 14, w_i=[ 0.5    -0.8    -1.6504], samples=1757
-Agent 15, w_i=[ 0.5    -0.8    -0.2289], samples=1684
-Agent 16, w_i=[ 0.5    -0.8    -0.9697], samples=354
-Agent 17, w_i=[ 0.5    -0.8     1.7476], samples=1161
-Agent 18, w_i=[ 0.5    -0.8    -1.9477], samples=347
-Agent 19, w_i=[ 0.5    -0.8    -0.4352], samples=275
-
+Agent 0, w_i=[ 0.5    -0.8    -1.6887], samples=1239 (6.2%)
+Agent 1, w_i=[ 0.5   -0.8    1.586], samples=850 (4.2%)
+Agent 2, w_i=[ 0.5    -0.8    -0.4319], samples=255 (1.3%)
+Agent 3, w_i=[ 0.5    -0.8    -0.0772], samples=3544 (17.7%)
+Agent 4, w_i=[ 0.5    -0.8    -0.2211], samples=153 (0.8%)
+Agent 5, w_i=[ 0.5    -0.8     0.1251], samples=816 (4.1%)
+Agent 6, w_i=[ 0.5    -0.8     0.3927], samples=332 (1.7%)
+Agent 7, w_i=[ 0.5    -0.8     0.8414], samples=308 (1.5%)
+Agent 8, w_i=[ 0.5    -0.8     0.0998], samples=746 (3.7%)
+Agent 9, w_i=[ 0.5    -0.8     0.7391], samples=2378 (11.9%)
+Agent 10, w_i=[ 0.5    -0.8    -0.6468], samples=1828 (9.1%)
+Agent 11, w_i=[ 0.5    -0.8     1.7467], samples=992 (5.0%)
+Agent 12, w_i=[ 0.5    -0.8    -1.7419], samples=44 (0.2%)
+Agent 13, w_i=[ 0.5    -0.8     0.1822], samples=937 (4.7%)
+Agent 14, w_i=[ 0.5    -0.8    -1.6504], samples=1757 (8.8%)
+Agent 15, w_i=[ 0.5    -0.8    -0.2289], samples=1684 (8.4%)
+Agent 16, w_i=[ 0.5    -0.8    -0.9697], samples=354 (1.8%)
+Agent 17, w_i=[ 0.5    -0.8     1.7476], samples=1161 (5.8%)
+Agent 18, w_i=[ 0.5    -0.8    -1.9477], samples=347 (1.7%)
+Agent 19, w_i=[ 0.5    -0.8    -0.4352], samples=275 (1.4%)
 Local least-squares:
 Agent 0 local solution w_i=[ 0.4987 -0.7964 -1.6642], RMSE=0.79, R2=0.93
 Agent 1 local solution w_i=[ 0.5016 -0.7856  1.5689], RMSE=0.81, R2=0.93
@@ -453,7 +442,6 @@ Agent 16 local solution w_i=[ 0.5038 -0.7953 -1.0049], RMSE=0.82, R2=0.92
 Agent 17 local solution w_i=[ 0.4985 -0.8109  1.7588], RMSE=0.83, R2=0.92
 Agent 18 local solution w_i=[ 0.496  -0.8141 -1.9055], RMSE=0.78, R2=0.93
 Agent 19 local solution w_i=[ 0.4933 -0.8207 -0.3997], RMSE=0.84, R2=0.94
-
 After consensus:
 Agent 0 local solution w_i=[ 0.5003 -0.8015 -1.664 ], RMSE=0.79, R2=0.93
 Agent 1 local solution w_i=[ 0.501  -0.8019  1.5694], RMSE=0.81, R2=0.93
