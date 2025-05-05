@@ -93,12 +93,12 @@ class Agent:
         pi_ij = self.metropolis[1:]
 
         # this node
-        self._q_1i_next = pi_ii * self.q_1i  # [p]
-        self._omega_1i_next = pi_ii * self.omega_1i  # [p,p]
+        self._q_1i_next = pi_ii * self.q_1i.copy()  # [p]
+        self._omega_1i_next = pi_ii * self.omega_1i.copy()  # [p,p]
         # neighbors
         for j, neighbor in enumerate(self.neighbors):
-            self._q_1i_next += pi_ij[j] * neighbor.q_1i
-            self._omega_1i_next += pi_ij[j] * neighbor.omega_1i
+            self._q_1i_next += pi_ij[j] * neighbor.q_1i.copy()
+            self._omega_1i_next += pi_ij[j] * neighbor.omega_1i.copy()
 
     def sync(self) -> None:
         """Effective consensus step"""
@@ -119,7 +119,7 @@ class Agent:
         sigma_21i_11i_mult = sigma_21i.dot(sigma_11i)  # [p_i,p]
         mu_new_old_sub = self.mu_i_new[:self.p] - self.mu_i[:self.p]  # [p]
 
-        mu_2i_next = self.mu_i[self.p:] + \
+        mu_2i_next = self.mu_i[self.p:].copy() + \
             sigma_21i_11i_mult.dot(mu_new_old_sub)  # [p_i]
         # update distribution
         self.mu_i_new[self.p:] = mu_2i_next.copy()
@@ -177,7 +177,7 @@ def consensus_algorithm(opts, agents: List[Agent], gt):
 
     # 2) Plot parameters convergence
     vals_tensor = np.array(params_agents_iters)  # [iters, n_agents, params]
-    labels = [r"$\alpha_1$", r"$\alpha_2$", r"$\beta_i$"]
+    labels = [r"$\alpha_1$", r"$\alpha_2$", r"$|\beta_i-\beta^\ast|$"]
     fnames = [f"{opts.experiment_name}_{coeff}.svg" for coeff in [
         "alpha1", "alpha2", "beta"]]
     paths = [os.path.join(output_dir, fname) for fname in fnames]
@@ -203,7 +203,6 @@ def _make_consensus(agents: List[Agent]):
         # update actual variables with values saved in _next
         agent.sync()
         params_agents.append(agent.w_i)
-
         # update local parameters
         agent.local_consensus()
 

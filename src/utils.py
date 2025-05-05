@@ -118,7 +118,7 @@ def plot_alpha(vals_mat: np.ndarray, ylab, title, groundtruth: float, output_pat
     ax.legend()
     if groundtruth:
         ax.axhline(y=groundtruth, color="r", linestyle="--", linewidth=2)
-        ax.set_ylim(groundtruth-0.05, groundtruth+0.05)
+        ax.set_ylim(groundtruth-0.1, groundtruth+0.1)
 
     plt.savefig(output_path)
 
@@ -128,14 +128,15 @@ def plot_beta(vals_mat: np.ndarray, ylab, title, groundtruth: np.ndarray, output
     _, ax = plt.subplots()
     iters = vals_mat.shape[0]
     for i in range(vals_mat.shape[1]):
-        ax.plot(np.arange(iters), vals_mat[:, i], label=f"Agent {i}")
+        ax.plot(np.arange(iters), abs(vals_mat[:, i]-groundtruth[i]), label=f"Agent {i}")
 
     ax.set_title(title)
     ax.set_xlabel("iters")
     ax.set_ylabel(ylab)
     ax.grid(True, linestyle="--", alpha=0.7)
+    ax.set_ylim(0, 0.1)
     ax.legend()
-    for gt in groundtruth:
-        ax.axhline(y=gt, color="k", linestyle="--", linewidth=1)
+    # for gt in groundtruth:
+    #     ax.axhline(y=gt, color="k", linestyle="--", linewidth=1)
 
     plt.savefig(output_path)
