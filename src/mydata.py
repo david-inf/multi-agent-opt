@@ -8,36 +8,39 @@ We analyze two scenarios:
 We'd like to se the impact on consensus convergence
 """
 
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 from utils import set_seeds, LOG, AverageMeter
 
 
-def get_features(opts):
+def generate_features(opts):
     """Generate random features of size 2 and constant columns for bias"""
+    set_seeds(opts.seed)
     N = opts.n_samples
 
     x1_half1 = np.random.uniform(-10, 10, N//2)
     x1_half2 = np.random.uniform(-1, 1, N-N//2)
     x1 = np.hstack((x1_half1, x1_half2))
 
-    x2_half1 = np.random.uniform(-10, 10, int(0.2*N))
-    x2_half2 = np.random.uniform(-1, 1, N-int(0.2*N))
+    x2_half1 = np.random.uniform(-10, 10, N//2)
+    x2_half2 = np.random.uniform(-1, 1, N-N//2)
     x2 = np.hstack((x2_half1, x2_half2))
-
-    # randomize rows so each agents gets both types of features
-    set_seeds(opts.seed)
-    np.random.shuffle(x1)
-    np.random.shuffle(x2)
 
     # full dataset with constant column for local bias
     features = np.column_stack((x1, x2, np.ones(N)))
+
+    # randomize rows so each agents gets both types of features
+    indices = list(range(N))
+    np.random.shuffle(indices)
+    features = features[indices]
 
     return features
 
 
 def targets_and_splits(opts, features: np.ndarray):
     """Given the full dataset, split for each agent"""
+    set_seeds(opts.seed)
     if opts.dataset == "balanced":
         # all agents get the same amount of samples
         data_splits = np.array_split(features, opts.n_agents)  # list of arrays 2D
@@ -53,9 +56,7 @@ def targets_and_splits(opts, features: np.ndarray):
 
     # fixed common parameters and variable local biases
     w = [0.5, -0.8]  # [p]
-    beta_i = np.random.uniform(-2, 2, opts.n_agents)  # [p_i]
-    # beta_i = np.array([0.8]*n_agents)
-    gt = w.copy() + [beta_i]  # ground-truth
+    betas = []  # groundtruth
 
     LOG.info("Actual parameters:")
     w_local = AverageMeter()
@@ -65,13 +66,10 @@ def targets_and_splits(opts, features: np.ndarray):
         features_i = data_splits[i]  # [N,(p+p_i)]
 
         # local weights (common + local)
-        w_i = np.hstack((w, beta_i[i]))  # [p+p_i]
+        beta_i = random.uniform(-2., 2.)  # [p_i]
+        betas.append(beta_i)
+        w_i = np.array(w + [beta_i])  # [p+p_i]
         w_local.update(w_i)
-
-        with np.printoptions(precision=4):
-            fraction = features_i.shape[0] / features.shape[0]
-            LOG.info("Agent %d, w_i=%s, samples=%d (%.1f%%)",
-                     i, w_i, features_i.shape[0], 100.*fraction)
 
         # additive noise
         noise = 0.8*np.random.randn(features_i.shape[0])  # [N]
@@ -81,8 +79,14 @@ def targets_and_splits(opts, features: np.ndarray):
         # add to agent splits
         agent_data = {"features": features_i, "targets": targets_i}
         agent_splits.append(agent_data)
+
+        with np.printoptions(precision=4):
+            fraction = features_i.shape[0] / features.shape[0]
+            LOG.info("Agent %d, w_i=%s, samples=%d (%.1f%%)",
+                     i, w_i, features_i.shape[0], 100.*fraction)
     print()
 
+    gt = w + [betas]
     return agent_splits, gt  # list of dict
 
 
@@ -93,7 +97,7 @@ def get_dataset(opts):
     """
     set_seeds(opts.seed)
     # 1) Generate features
-    features = get_features(opts)
+    features = generate_features(opts)
 
     # 2) Split dataset and generate targets for each agent
     agent_splits, gt = targets_and_splits(opts, features)
@@ -107,7 +111,7 @@ def main(opts):
     fig, axs = plt.subplots(n_ag//2, 4, layout="constrained")
     fig.suptitle("Local targets distribution")
 
-    agent_splits = get_dataset(opts)
+    agent_splits, _ = get_dataset(opts)
 
     for i, (agent_data, ax) in enumerate(zip(agent_splits, axs.flatten())):
         LOG.info("Agent: %d", i)
@@ -116,11 +120,9 @@ def main(opts):
         local_targets = agent_data["targets"]
         print("Features:", local_features.shape,
               "Targets:", local_targets.shape)
-        print(local_features[:3], local_targets[:3])
-        print("")
 
         ax.hist(local_targets, bins=10, density=True)
-        ax.set_title("Agent: %d", i)
+        # ax.set_title("Agent: %d", i)
 
     plt.show()
 

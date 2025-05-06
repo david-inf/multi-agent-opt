@@ -1,9 +1,0 @@
-dataset: unbalanced
-dist_thresh: 1.35
-experiment_name: unbalanced_random20
-grid_size: 5
-maxiter: 50
-n_agents: 20
-n_samples: 20000
-seed: 42
-topology: random

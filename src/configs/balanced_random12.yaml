@@ -2,7 +2,7 @@ dataset: balanced
 dist_thresh: 2.2
 experiment_name: balanced_random12
 grid_size: 5
-maxiter: 30
+maxiter: 40
 n_agents: 12
 n_samples: 12000
 seed: 42

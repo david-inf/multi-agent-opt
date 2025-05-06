@@ -93,12 +93,12 @@ class Agent:
         pi_ij = self.metropolis[1:]
 
         # this node
-        self._q_1i_next = pi_ii * self.q_1i.copy()  # [p]
-        self._omega_1i_next = pi_ii * self.omega_1i.copy()  # [p,p]
+        self._q_1i_next = pi_ii * self.q_1i  # [p]
+        self._omega_1i_next = pi_ii * self.omega_1i  # [p,p]
         # neighbors
         for j, neighbor in enumerate(self.neighbors):
-            self._q_1i_next += pi_ij[j] * neighbor.q_1i.copy()
-            self._omega_1i_next += pi_ij[j] * neighbor.omega_1i.copy()
+            self._q_1i_next += pi_ij[j] * neighbor.q_1i
+            self._omega_1i_next += pi_ij[j] * neighbor.omega_1i
 
     def sync(self) -> None:
         """Effective consensus step"""
@@ -149,15 +149,13 @@ def consensus_algorithm(opts, agents: List[Agent], gt):
         params0.append(agent.w_i.copy())
         # check fit metrics
         _training_metrics(agent)
-    err0 = _consensus_error(agents)
 
-    errs_iters = [err0]  # list of floats
+    errs_iters = [_consensus_error(agents)]  # list of floats
     params_agents_iters = [params0]  # [L, N, 3]
     with tqdm(range(opts.maxiter), desc="Consensus", unit="it") as titers:
         for _ in titers:
             # single consensus step on common and local parameters
             cons_err, params_agents = _make_consensus(agents)
-
             # metrics
             errs_iters.append(cons_err)
             params_agents_iters.append(deepcopy(params_agents))
@@ -174,20 +172,15 @@ def consensus_algorithm(opts, agents: List[Agent], gt):
     # 1) Plot consensus error
     output_path = os.path.join(output_dir, opts.experiment_name+"_iters.svg")
     plot_metric(errs_iters, output_path)
-
     # 2) Plot parameters convergence
     vals_tensor = np.array(params_agents_iters)  # [iters, n_agents, params]
-    labels = [r"$\alpha_1$", r"$\alpha_2$", r"$|\beta_i-\beta^\ast|$"]
-    fnames = [f"{opts.experiment_name}_{coeff}.svg" for coeff in [
-        "alpha1", "alpha2", "beta"]]
-    paths = [os.path.join(output_dir, fname) for fname in fnames]
-
-    plot_alpha(vals_tensor[:, :, 0], labels[0],
+    paths = [os.path.join(output_dir, f"{opts.experiment_name}_{coeff}.svg") for coeff in ["alpha1", "alpha2", "beta"]]
+    plot_alpha(vals_tensor[:, :, 0], r"$\alpha_1$",
                "Coefficient convergence", gt[0], paths[0])
-    plot_alpha(vals_tensor[:, :, 1], labels[1],
+    plot_alpha(vals_tensor[:, :, 1], r"$\alpha_2$",
                "Coefficient convergence", gt[1], paths[1])
-    plot_beta(vals_tensor[:, :, 2], labels[2], "Coefficient convergence",
-              gt[2], paths[2])
+    plot_beta(vals_tensor[:, :, 2], r"$|\beta_i-\beta^\ast|$",
+              "Coefficient convergence", gt[2], paths[2])
 
 
 def _make_consensus(agents: List[Agent]):
@@ -197,7 +190,7 @@ def _make_consensus(agents: List[Agent]):
         # computed updates are store in _next variables
         agent.consensus_step()
 
-    # check training metrics
+    # [[a_1, a_2, beta_1], [a_1, a_2, beta_2],...]
     params_agents = []  # list of np.ndarray
     for agent in agents:
         # update actual variables with values saved in _next

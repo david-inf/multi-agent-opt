@@ -115,7 +115,7 @@ def plot_alpha(vals_mat: np.ndarray, ylab, title, groundtruth: float, output_pat
     ax.set_xlabel("iters")
     ax.set_ylabel(ylab)
     ax.grid(True, linestyle="--", alpha=0.7)
-    ax.legend()
+    ax.legend(loc="upper right")
     if groundtruth:
         ax.axhline(y=groundtruth, color="r", linestyle="--", linewidth=2)
         ax.set_ylim(groundtruth-0.1, groundtruth+0.1)
@@ -134,9 +134,8 @@ def plot_beta(vals_mat: np.ndarray, ylab, title, groundtruth: np.ndarray, output
     ax.set_xlabel("iters")
     ax.set_ylabel(ylab)
     ax.grid(True, linestyle="--", alpha=0.7)
-    ax.set_ylim(0, 0.1)
-    ax.legend()
-    # for gt in groundtruth:
-    #     ax.axhline(y=gt, color="k", linestyle="--", linewidth=1)
+    ax.set_ylim(0, 0.2)
+    ax.legend(loc="upper right")
+    ax.axhline(y=0., color="r", linestyle="--", linewidth=2)
 
     plt.savefig(output_path)
