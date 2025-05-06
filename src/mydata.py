@@ -11,7 +11,8 @@ We'd like to se the impact on consensus convergence
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import set_seeds, LOG, AverageMeter
+from utils import set_seeds, AverageMeter, get_logger
+LOG = get_logger()
 
 
 def generate_features(opts):

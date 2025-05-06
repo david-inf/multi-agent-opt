@@ -134,7 +134,7 @@ def plot_beta(vals_mat: np.ndarray, ylab, title, groundtruth: np.ndarray, output
     ax.set_xlabel("iters")
     ax.set_ylabel(ylab)
     ax.grid(True, linestyle="--", alpha=0.7)
-    ax.set_ylim(0, 0.2)
+    # ax.set_ylim(0, 0.2)
     ax.legend(loc="upper right")
     ax.axhline(y=0., color="r", linestyle="--", linewidth=2)
 

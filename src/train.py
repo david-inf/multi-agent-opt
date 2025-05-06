@@ -6,7 +6,7 @@ import numpy as np
 import numpy.linalg as la
 
 from tqdm import tqdm
-from utils import rmse, r2, plot_metric, LOG, plot_alpha, plot_beta
+from utils import rmse, r2, plot_metric, plot_alpha, plot_beta, LOG
 
 
 class Agent:
@@ -114,9 +114,9 @@ class Agent:
 
     def local_consensus(self) -> None:
         """Update agent-specific parameters, only one step needed"""
-        sigma_11i = la.inv(self.sigma_i_new[:self.p, :self.p])  # [p,p]
+        sigma_11i_inv = la.inv(self.sigma_i_new[:self.p, :self.p])  # [p,p]
         sigma_21i = self.sigma_i[self.p:, :self.p].copy()  # [p_i,p]
-        sigma_21i_11i_mult = sigma_21i.dot(sigma_11i)  # [p_i,p]
+        sigma_21i_11i_mult = sigma_21i.dot(sigma_11i_inv)  # [p_i,p]
         mu_new_old_sub = self.mu_i_new[:self.p] - self.mu_i[:self.p]  # [p]
 
         mu_2i_next = self.mu_i[self.p:].copy() + \

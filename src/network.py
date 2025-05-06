@@ -174,9 +174,9 @@ def main(opts):
 
 if __name__ == "__main__":
     from cmd_args import parse_args
-    from ipdb import launch_ipdb_on_exception
-
+    import ipdb
     args = parse_args()
-
-    with launch_ipdb_on_exception():
+    try:
         main(args)
+    except Exception:
+        ipdb.post_mortem()
